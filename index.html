@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>MeshCore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-slate-300">
+
+<div id="app" class="space-y-2 p-3">
+
+    <!-- header -->
+    <div class="flex border bg-gray-50 p-3 rounded shadow">
+        <div class="my-auto">
+            <div class="font-bold">MeshCore Client</div>
+            <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500 hover:underline">Liam Cottle</a></div>
+        </div>
+    </div>
+
+    <div class="border bg-gray-50 rounded shadow">
+
+        <div class="p-3 border-t space-x-1">
+            <button @click="askForSerialPort" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Connect
+            </button>
+            <button @click="sendCommandAppStart" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Send AppStart
+            </button>
+            <button @click="sendSendSelfAdvert(0)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Send Advert (Zero Hop)
+            </button>
+            <button @click="sendSendSelfAdvert(1)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Send Advert (Flood)
+            </button>
+            <button @click="sendCommandSetAdvertName" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Set Advert Name
+            </button>
+            <button @click="sendCommandSyncNextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                SyncNextMessage
+            </button>
+            <button @click="sendCommandGetContacts" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                GetContacts
+            </button>
+            <button @click="sendCommandGetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                GetDeviceTime
+            </button>
+            <button @click="sendCommandSetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                SetDeviceTime
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script type="module">
+    import Device from "./src/device.js";
+    Vue.createApp({
+        data() {
+            return {
+                device: null,
+            };
+        },
+        mounted() {
+
+        },
+        methods: {
+            async askForSerialPort() {
+
+                if(!navigator.serial){
+                    alert("Web Serial is not supported in this browser");
+                    return null;
+                }
+
+                // ask user to select device
+                const serialPort = await navigator.serial.requestPort({
+                    filters: [],
+                });
+
+                this.device = await Device.fromSerialPort(serialPort);
+
+            },
+            async sendCommandAppStart() {
+                await this.device.sendCommandAppStart();
+            },
+            async sendSendSelfAdvert(type) {
+                await this.device.sendCommandSendSelfAdvert(type);
+            },
+            async sendCommandGetContacts() {
+                await this.device.sendCommandGetContacts();
+            },
+            async sendCommandGetDeviceTime() {
+                await this.device.sendCommandGetDeviceTime();
+            },
+            async sendCommandSetDeviceTime() {
+                const timestamp = Math.floor(Date.now() / 1000);
+                await this.device.sendCommandSetDeviceTime(timestamp);
+            },
+            async sendCommandSetAdvertName() {
+
+                // ask user for name
+                const name = prompt("Please enter name");
+                if(!name){
+                    return;
+                }
+
+                // set name
+                await this.device.sendCommandSetAdvertName(name);
+
+            },
+            async sendCommandSyncNextMessage() {
+                await this.device.sendCommandSyncNextMessage();
+            },
+        },
+    }).mount('#app');
+</script>
+
+</body>
+</html>

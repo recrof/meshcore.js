@@ -83,7 +83,7 @@ class Connection extends EventEmitter {
         data.writeBytes(publicKey);
         data.writeByte(type);
         data.writeByte(flags);
-        data.writeByte(outPathLen);
+        data.writeByte(outPathLen); // todo writeInt8
         data.writeBytes(outPath); // 64 bytes
         data.writeCString(advName, 32); // 32 bytes
         data.writeUInt32LE(lastAdvert);
@@ -211,7 +211,7 @@ class Connection extends EventEmitter {
             publicKey: bufferReader.readBytes(32),
             type: bufferReader.readByte(),
             flags: bufferReader.readByte(),
-            outPathLen: bufferReader.readByte(),
+            outPathLen: bufferReader.readInt8(),
             outPath: bufferReader.readBytes(64),
             advName: bufferReader.readCString(32),
             lastAdvert: bufferReader.readUInt32LE(),

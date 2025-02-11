@@ -107,13 +107,14 @@
                         <div class="text-sm text-gray-500"><{{ bytesToHex(contact.publicKey) }}></div>
                         <div class="text-sm text-gray-500">Type: {{ contactTypeToString(contact.type) }} • Last Advert: {{ contact.lastAdvert }}</div>
                         <div class="text-sm text-gray-500">
-                            <span v-if="contact.outPathLen === -1">Path: ???</span>
+                            <span v-if="contact.outPathLen === -1">Path: ??? (Flood)</span>
                             <span v-else-if="contact.outPathLen === 0">Path: Direct</span>
-                            <span v-else>Path: {{ contact.outPathLen }} hops</span>
+                            <span v-else>Path: {{ contact.outPathLen }} hops [{{ formatOutPath(contact) }}]</span>
                         </div>
                     </div>
                     <div class="flex my-auto ml-2 space-x-2">
                         <div @click="sendMessage(contact)" class="hover:underline cursor-pointer">Message</div>
+                        <div @click="setPath(contact)" class="hover:underline cursor-pointer">Set Path</div>
                         <div @click="resetPath(contact)" class="hover:underline cursor-pointer">Reset Path</div>
                         <div @click="removeContact(contact)" class="hover:underline cursor-pointer">Forget</div>
                     </div>
@@ -195,6 +196,20 @@
                     case 2: return "Repeater";
                     case 3: return "Room";
                 }
+            },
+            formatOutPath(contact) {
+
+                // get out path
+                const outPath = contact.outPath.slice(0, contact.outPathLen);
+
+                // convert each path to hex
+                const pathHashes = Array.from(outPath).map((path) => {
+                    return path.toString(16);
+                });
+
+                // return with separator
+                return pathHashes.join(" -> ");
+
             },
             async sendCommandAppStart() {
                 const selfInfo = await this.connection.getSelfInfo();
@@ -298,6 +313,26 @@
 
                 // reload contacts
                 await this.loadContacts();
+
+            },
+            async setPath(contact) {
+
+                const newOutPath = [
+                    0xf4,
+                ];
+
+                // create out path
+                const outPath = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+                for(var i = 0; i < newOutPath.length; i++){
+                    outPath[i] = newOutPath[i];
+                }
+
+                // update contact details
+                contact.outPathLen = newOutPath.length;
+                contact.outPath = outPath;
+
+                // update contact
+                await this.connection.sendCommandAddUpdateContact(contact.publicKey, contact.type, contact.flags, contact.outPathLen, contact.outPath, contact.advName, contact.lastAdvert, contact.advLat, contact.advLon);
 
             },
             bytesToHex(uint8Array) {

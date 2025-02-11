@@ -18,7 +18,8 @@ class Constants {
         SyncNextMessage: 10, // done
         SetRadioParams: 11, // done
         SetTxPower: 12, // done
-        SetAdvertLatLon: 14,
+        SetAdvertLatLon: 14, // done
+        RemoveContact: 15, // done
     }
 
     static ResponseCodes = {

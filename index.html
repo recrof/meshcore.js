@@ -44,6 +44,9 @@
             <button @click="sendCommandSetAdvertLatLon" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 SetAdvertLatLon
             </button>
+            <button @click="sendCommandRemoveContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                RemoveContact
+            </button>
             <button @click="sendCommandAddUpdateContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 AddUpdateContact
             </button>
@@ -159,6 +162,10 @@
                 const lat = 123;
                 const lon = 456;
                 await this.device.sendCommandSetAdvertLatLon(lat, lon);
+            },
+            async sendCommandRemoveContact() {
+                const publicKey = new Uint8Array([148, 63, 175, 162, 88, 212, 192, 40, 214, 185, 213, 140, 42, 145, 194, 186, 70, 71, 112, 68, 0, 192, 65, 4, 105, 143, 230, 50, 162, 79, 247, 192]);
+                await this.device.sendCommandRemoveContact(publicKey);
             },
             async sendCommandAddUpdateContact() {
                 const publicKey = new Uint8Array([148, 63, 175, 162, 88, 212, 192, 40, 214, 185, 213, 140, 42, 145, 194, 186, 70, 71, 112, 68, 0, 192, 65, 4, 105, 143, 230, 50, 162, 79, 247, 192]);

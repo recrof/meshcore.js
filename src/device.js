@@ -174,6 +174,13 @@ class Device {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandRemoveContact(pubKey) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.RemoveContact);
+        data.writeBytes(pubKey); // 32 bytes
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async readLoop() {
         try {
             while(true){

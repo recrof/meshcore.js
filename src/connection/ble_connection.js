@@ -66,6 +66,9 @@ class BleConnection extends Connection {
             this.onFrameReceived(frame);
         });
 
+        // fire connected event
+        this.onConnected();
+
     }
 
     async close() {

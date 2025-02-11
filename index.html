@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>MeshCore</title>
+
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
 </head>
 <body class="bg-slate-300">
 
-<div id="app" class="space-y-2 p-3">
+<div id="app" class="space-y-2 p-3" v-cloak>
 
     <!-- header -->
     <div class="flex border bg-gray-50 p-3 rounded shadow">
@@ -20,63 +29,94 @@
         </div>
     </div>
 
+    <!-- connection state -->
     <div class="border bg-gray-50 rounded shadow">
-
-        <div class="p-3 border-t space-x-1">
-            <button @click="askForSerialPort" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+        <div class="p-3 space-x-1">
+            <button v-if="!connection" @click="askForSerialPort" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Connect (Serial)
             </button>
-            <button @click="askForBleDevice" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            <button v-if="!connection" @click="askForBleDevice" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Connect (BLE)
             </button>
-            <button @click="disconnect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+            <button v-if="connection" @click="disconnect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Disconnect
             </button>
-            <button @click="sendCommandAppStart" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                AppStart
-            </button>
-            <button @click="sendSendSelfAdvert(0)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SendSelfAdvert(ZeroHop)
-            </button>
-            <button @click="sendSendSelfAdvert(1)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SendSelfAdvert(Flood)
-            </button>
-            <button @click="sendCommandSetAdvertName" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SetAdvertName
-            </button>
-            <button @click="sendCommandSetAdvertLatLon" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SetAdvertLatLon
-            </button>
-            <button @click="sendCommandRemoveContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                RemoveContact
-            </button>
-            <button @click="sendCommandAddUpdateContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                AddUpdateContact
-            </button>
-            <button @click="sendCommandSyncNextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SyncNextMessage
-            </button>
-            <button @click="sendCommandGetContacts" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                GetContacts
-            </button>
-            <button @click="sendCommandGetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                GetDeviceTime
-            </button>
-            <button @click="sendCommandSetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SetDeviceTime
-            </button>
-            <button @click="sendCommandSetRadioParams" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SetRadioParams
-            </button>
-            <button @click="sendCommandSetTxPower" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SetTxPower
-            </button>
-            <button @click="sendCommandResetPath" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                ResetPath
-            </button>
-            <button @click="sendCommandSendTxtMsg" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                SendTxtMsg
-            </button>
+        </div>
+    </div>
+
+    <div v-if="connection" class="space-y-2">
+
+        <!-- self info -->
+        <div v-if="selfInfo" class="border bg-gray-50 rounded shadow">
+            <div class="p-3">
+                <div>Connected to: {{ selfInfo.name }}</div>
+            </div>
+        </div>
+
+        <!-- actions -->
+        <div class="border bg-gray-50 rounded shadow">
+            <div class="p-3 space-x-1">
+                <button @click="sendCommandAppStart" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    AppStart
+                </button>
+                <button @click="sendSendSelfAdvert(0)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SendSelfAdvert(ZeroHop)
+                </button>
+                <button @click="sendSendSelfAdvert(1)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SendSelfAdvert(Flood)
+                </button>
+                <button @click="sendCommandSetAdvertName" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SetAdvertName
+                </button>
+                <button @click="sendCommandSetAdvertLatLon" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SetAdvertLatLon
+                </button>
+                <button @click="sendCommandRemoveContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    RemoveContact
+                </button>
+                <button @click="sendCommandAddUpdateContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    AddUpdateContact
+                </button>
+                <button @click="sendCommandSyncNextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SyncNextMessage
+                </button>
+                <button @click="sendCommandGetContacts" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    GetContacts
+                </button>
+                <button @click="sendCommandGetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    GetDeviceTime
+                </button>
+                <button @click="sendCommandSetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SetDeviceTime
+                </button>
+                <button @click="sendCommandSetRadioParams" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SetRadioParams
+                </button>
+                <button @click="sendCommandSetTxPower" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SetTxPower
+                </button>
+                <button @click="sendCommandResetPath" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    ResetPath
+                </button>
+                <button @click="sendCommandSendTxtMsg" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SendTxtMsg
+                </button>
+            </div>
+        </div>
+
+        <!-- contacts -->
+        <div class="border bg-gray-50 rounded shadow">
+            <div class="divide-y">
+                <div v-for="contact of contacts" class="flex px-2 py-1">
+                    <div class="my-auto mr-auto">
+                        <div class="font-semibold">{{ contact.advName }}</div>
+                        <div class="text-sm text-gray-500">Type: {{ contactTypeToString(contact.type) }} • Last Advert: {{ contact.lastAdvert }}</div>
+                    </div>
+                    <div class="my-auto mx-2">
+                        <div @click="removeContact(contact)" class="hover:underline">Forget</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -90,7 +130,9 @@
     Vue.createApp({
         data() {
             return {
-                device: null,
+                connection: null,
+                selfInfo: null,
+                contacts: [],
             };
         },
         mounted() {
@@ -99,22 +141,48 @@
         methods: {
             async askForSerialPort() {
                 this.connection = await SerialConnection.open();
-                this.connection.on("tx", (data) => console.log("tx", data));
-                this.connection.on("rx", (data) => console.log("rx", data));
+                this.connection.on("connected", () => this.onConnected());
+                // this.connection.on("tx", (data) => console.log("tx", data));
+                // this.connection.on("rx", (data) => console.log("rx", data));
             },
             async askForBleDevice() {
                 this.connection = await BleConnection.open();
-                this.connection.on("tx", (data) => console.log("tx", data));
-                this.connection.on("rx", (data) => console.log("rx", data));
+                this.connection.on("connected", () => this.onConnected());
+                // this.connection.on("tx", (data) => console.log("tx", data));
+                // this.connection.on("rx", (data) => console.log("rx", data));
             },
             async disconnect() {
                 if(this.connection){
                     await this.connection.close();
-                    this.device = null;
+                    this.connection = null;
+                }
+            },
+            async onConnected() {
+                console.log("connected");
+                await this.loadSelfInfo();
+                await this.loadContacts();
+                this.connection.on(Constants.PushCodes.Advert, async () => {
+                    console.log("on advert");
+                    await this.loadContacts();
+                });
+            },
+            async loadSelfInfo() {
+                this.selfInfo = await this.connection.getSelfInfo();
+            },
+            async loadContacts() {
+                this.contacts = await this.connection.getContacts();
+            },
+            contactTypeToString(type) {
+                switch(type){
+                    case 0: return "Unknown";
+                    case 1: return "Chat";
+                    case 2: return "Repeater";
+                    case 3: return "Room";
                 }
             },
             async sendCommandAppStart() {
-                await this.connection.sendCommandAppStart();
+                const selfInfo = await this.connection.getSelfInfo();
+                console.log(selfInfo);
             },
             async sendCommandSendTxtMsg() {
                 const txtType = Constants.TxtTypes.Plain;
@@ -128,7 +196,8 @@
                 await this.connection.sendCommandSendSelfAdvert(type);
             },
             async sendCommandGetContacts() {
-                await this.connection.sendCommandGetContacts();
+                this.contacts = await this.connection.getContacts();
+                console.log(this.contacts);
             },
             async sendCommandGetDeviceTime() {
                 await this.connection.sendCommandGetDeviceTime();
@@ -165,8 +234,9 @@
 
             },
             async sendCommandSetAdvertLatLon() {
-                const lat = 123;
-                const lon = 456;
+                const lat = Math.floor(-38.661727955271765 * 1000000);
+                const lon = Math.floor(178.0236810462527 * 1000000);
+                console.log(lat, lon);
                 await this.connection.sendCommandSetAdvertLatLon(lat, lon);
             },
             async sendCommandRemoveContact() {
@@ -187,6 +257,20 @@
             },
             async sendCommandSyncNextMessage() {
                 await this.connection.sendCommandSyncNextMessage();
+            },
+            async removeContact(contact) {
+
+                // ask user to confirm action
+                if(!confirm("Are you sure you want to remove this contact?")){
+                    return;
+                }
+
+                // remove contact from device
+                await this.connection.sendCommandRemoveContact(contact.publicKey);
+
+                // reload contacts
+                await this.loadContacts();
+
             },
         },
     }).mount('#app');

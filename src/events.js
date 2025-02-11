@@ -26,6 +26,24 @@ class EventEmitter {
 
     }
 
+    once(event, callback) {
+
+        // internal callback to handle the event
+        const internalCallback = (...data) => {
+
+            // we received an event, so lets remove the event listener
+            this.off(event, internalCallback);
+
+            // fire the original callback provided by the user
+            setTimeout(() => callback(...data), 0);
+
+        };
+
+        // listen to this event
+        this.on(event, internalCallback);
+
+    }
+
     emit(event, ...data) {
 
         // invoke each listener for this event

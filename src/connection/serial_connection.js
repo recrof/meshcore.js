@@ -6,12 +6,20 @@ import Connection from "./connection.js";
 class SerialConnection extends Connection {
 
     constructor(serialPort) {
+
         super();
+
         this.serialPort = serialPort;
         this.reader = serialPort.readable.getReader();
         this.writable = serialPort.writable;
         this.readBuffer = [];
         this.readLoop();
+
+        // fire connected callback after constructor has returned
+        setTimeout(() => {
+            this.onConnected();
+        }, 0);
+
     }
 
     static async open() {

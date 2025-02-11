@@ -5,6 +5,10 @@ import EventEmitter from "../events.js";
 
 class Connection extends EventEmitter {
 
+    onConnected() {
+        this.emit("connected");
+    }
+
     async close() {
         throw new Error("This method must be implemented by the subclass.");
     }
@@ -166,32 +170,32 @@ class Connection extends EventEmitter {
     }
 
     onAdvertPush(bufferReader) {
-        this.emit("AdvertPush", {
+        this.emit(Constants.PushCodes.Advert, {
             publicKey: bufferReader.readBytes(32),
         });
     }
 
     onSendConfirmedPush(bufferReader) {
-        this.emit("SendConfirmedPush", {
+        this.emit(Constants.PushCodes.SendConfirmed, {
             ackCode: bufferReader.readBytes(4),
             roundTrip: bufferReader.readUInt32LE(),
         });
     }
 
     onMsgWaitingPush(bufferReader) {
-        this.emit("MsgWaitingPush", {
+        this.emit(Constants.PushCodes.MsgWaiting, {
 
         });
     }
 
     onContactsStartResponse(bufferReader) {
-        this.emit("ContactsStartResponse", {
+        this.emit(Constants.ResponseCodes.ContactsStart, {
             count: bufferReader.readUInt32LE(),
         });
     }
 
     onContactResponse(bufferReader) {
-        this.emit("ContactResponse", {
+        this.emit(Constants.ResponseCodes.Contact, {
             publicKey: bufferReader.readBytes(32),
             type: bufferReader.readByte(),
             flags: bufferReader.readByte(),
@@ -206,19 +210,19 @@ class Connection extends EventEmitter {
     }
 
     onEndOfContactsResponse(bufferReader) {
-        this.emit("EndOfContactsResponse", {
+        this.emit(Constants.ResponseCodes.EndOfContacts, {
             mostRecentLastmod: bufferReader.readUInt32LE(),
         });
     }
 
     onSentResponse(bufferReader) {
-        this.emit("SentResponse", {
+        this.emit(Constants.ResponseCodes.Sent, {
 
         });
     }
 
     onSelfInfoResponse(bufferReader) {
-        this.emit("SelfInfoResponse", {
+        this.emit(Constants.ResponseCodes.SelfInfo, {
             type: bufferReader.readByte(),
             txPower: bufferReader.readByte(),
             maxTxPower: bufferReader.readByte(),
@@ -235,24 +239,62 @@ class Connection extends EventEmitter {
     }
 
     onCurrTimeResponse(bufferReader) {
-        this.emit("CurrTimeResponse", {
+        this.emit(Constants.ResponseCodes.CurrTime, {
             epochSecs: bufferReader.readUInt32LE(),
         });
     }
 
     onNoMoreMessagesResponse(bufferReader) {
-        this.emit("NoMoreMessagesResponse", {
+        this.emit(Constants.ResponseCodes.NoMoreMessages, {
 
         });
     }
 
     onContactMsgRecvResponse(bufferReader) {
-        this.emit("ContactMsgRecvResponse", {
+        this.emit(Constants.ResponseCodes.ContactMsgRecv, {
             pubKeyPrefix: bufferReader.readBytes(6),
             pathLen: bufferReader.readByte(),
             txtType: bufferReader.readByte(),
             senderTimestamp: bufferReader.readUInt32LE(),
             text: bufferReader.readString(),
+        });
+    }
+
+    getSelfInfo() {
+        return new Promise(async (resolve, reject) => {
+
+            // listen for response
+            this.once(Constants.ResponseCodes.SelfInfo, (selfInfo) => {
+                resolve(selfInfo);
+            });
+
+            // request self info
+            await this.sendCommandAppStart();
+
+        });
+    }
+
+    getContacts() {
+        return new Promise(async (resolve, reject) => {
+
+            // add contacts we receive to a list
+            const contacts = [];
+            const onContactReceived = (contact) => {
+                contacts.push(contact);
+            }
+
+            // listen for contacts
+            this.on(Constants.ResponseCodes.Contact, onContactReceived);
+
+            // there's no more contacts to receive, stop listening and resolve the promise
+            this.once(Constants.ResponseCodes.EndOfContacts, () => {
+                this.off(Constants.ResponseCodes.Contact, onContactReceived);
+                resolve(contacts);
+            });
+
+            // request contacts from device
+            await this.sendCommandGetContacts();
+
         });
     }
 

@@ -6,41 +6,41 @@ class Constants {
     };
 
     static CommandCodes = {
-        AppStart: 1, // done
-        SendTxtMsg: 2, // done
-        SendChannelTxtMsg: 3,
-        GetContacts: 4, // done
-        GetDeviceTime: 5, // done
-        SetDeviceTime: 6, // done
-        SendSelfAdvert: 7, // done
-        SetAdvertName: 8, // done
-        AddUpdateContact: 9, // done
-        SyncNextMessage: 10, // done
-        SetRadioParams: 11, // done
-        SetTxPower: 12, // done
-        SetAdvertLatLon: 14, // done
-        RemoveContact: 15, // done
+        AppStart: 1,
+        SendTxtMsg: 2,
+        SendChannelTxtMsg: 3, // todo
+        GetContacts: 4,
+        GetDeviceTime: 5,
+        SetDeviceTime: 6,
+        SendSelfAdvert: 7,
+        SetAdvertName: 8,
+        AddUpdateContact: 9,
+        SyncNextMessage: 10,
+        SetRadioParams: 11,
+        SetTxPower: 12,
+        SetAdvertLatLon: 14,
+        RemoveContact: 15,
     }
 
     static ResponseCodes = {
-        Ok: 0,
-        Err: 1,
-        ContactsStart: 2, // done
-        Contact: 3, // done
-        EndOfContacts: 4, // done
-        SelfInfo: 5, // done
-        Sent: 6, // done
-        ContactMsgRecv: 7, // done
-        ChannelMsgRecv: 8,
-        CurrTime: 9, // done
-        NoMoreMessages: 10, // done
+        Ok: 0, // todo
+        Err: 1, // todo
+        ContactsStart: 2,
+        Contact: 3,
+        EndOfContacts: 4,
+        SelfInfo: 5,
+        Sent: 6,
+        ContactMsgRecv: 7,
+        ChannelMsgRecv: 8, // todo
+        CurrTime: 9,
+        NoMoreMessages: 10,
     }
 
     static PushCodes = {
-        Advert: 0x80, // done
-        PathUpdated: 0x81,
-        SendConfirmed: 0x82, // done
-        MsgWaiting: 0x83, // done
+        Advert: 0x80,
+        PathUpdated: 0x81, // todo
+        SendConfirmed: 0x82,
+        MsgWaiting: 0x83,
     }
 
     static AdvType = {

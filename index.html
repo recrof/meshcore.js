@@ -176,6 +176,7 @@
 
                 this.connection.on(Constants.PushCodes.PathUpdated, async (event) => {
                     console.log("PathUpdated", event);
+                    await this.loadContacts();
                 });
 
             },

@@ -42,6 +42,11 @@ class BleConnection extends Connection {
 
     async init() {
 
+        // listen for ble disconnect
+        this.bleDevice.addEventListener("gattserverdisconnected", () => {
+            this.emit("disconnected");
+        });
+
         // connect to gatt server
         this.gattServer = await this.bleDevice.gatt.connect();
 

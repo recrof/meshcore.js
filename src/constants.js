@@ -18,6 +18,7 @@ class Constants {
         SyncNextMessage: 10,
         SetRadioParams: 11,
         SetTxPower: 12,
+        ResetPath: 13,
         SetAdvertLatLon: 14,
         RemoveContact: 15,
     }

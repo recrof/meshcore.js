@@ -166,6 +166,13 @@ class Device {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandResetPath(pubKey) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.ResetPath);
+        data.writeBytes(pubKey); // 32 bytes
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandSetAdvertLatLon(lat, lon) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.SetAdvertLatLon);

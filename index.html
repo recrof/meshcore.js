@@ -68,6 +68,9 @@
             <button @click="sendCommandSetTxPower" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 SetTxPower
             </button>
+            <button @click="sendCommandResetPath" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                ResetPath
+            </button>
             <button @click="sendCommandSendTxtMsg" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 SendTxtMsg
             </button>
@@ -138,6 +141,10 @@
             async sendCommandSetTxPower() {
                 const txPower = 22;
                 await this.device.sendCommandSetTxPower(txPower);
+            },
+            async sendCommandResetPath() {
+                const publicKey = new Uint8Array([244, 231, 60, 250, 245, 218, 131, 156, 156, 98, 130, 39, 222, 43, 123, 147, 98, 200, 218, 251, 242, 89, 111, 108, 25, 191, 127, 151, 222, 192, 233, 177]);
+                await this.device.sendCommandResetPath(publicKey);
             },
             async sendCommandSetRadioParams() {
                 const radioFreq = 917375;

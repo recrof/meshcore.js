@@ -117,8 +117,8 @@ class Connection extends EventEmitter {
     async sendCommandSetAdvertLatLon(lat, lon) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.SetAdvertLatLon);
-        data.writeUInt32LE(lat);
-        data.writeUInt32LE(lon);
+        data.writeInt32LE(lat);
+        data.writeInt32LE(lon);
         await this.sendToRadioFrame(data.toBytes());
     }
 
@@ -223,8 +223,8 @@ class Connection extends EventEmitter {
             txPower: bufferReader.readByte(),
             maxTxPower: bufferReader.readByte(),
             publicKey: bufferReader.readBytes(32),
-            advLat: bufferReader.readUInt32LE(),
-            advLon: bufferReader.readUInt32LE(),
+            advLat: bufferReader.readInt32LE(),
+            advLon: bufferReader.readInt32LE(),
             reserved: bufferReader.readBytes(4),
             radioFreq: bufferReader.readUInt32LE(),
             radioBw: bufferReader.readUInt32LE(),

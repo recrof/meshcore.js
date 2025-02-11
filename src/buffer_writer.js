@@ -35,6 +35,13 @@ class BufferWriter {
         this.writeBytes(bytes);
     }
 
+    writeInt32LE(num) {
+        const bytes = new Uint8Array(4);
+        const view = new DataView(bytes.buffer);
+        view.setInt32(0, num, true);
+        this.writeBytes(bytes);
+    }
+
     writeString(string) {
         this.writeBytes(new TextEncoder().encode(string));
     }

@@ -81,6 +81,17 @@ class Device {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSendTxtMsg(txtType, attempt, senderTimestamp, pubKeyPrefix, text) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendTxtMsg);
+        data.writeByte(txtType);
+        data.writeByte(attempt);
+        data.writeUInt32LE(senderTimestamp);
+        data.writeBytes(pubKeyPrefix.slice(0, 6)); // only the first 6 bytes of pubKey are sent
+        data.writeString(text);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandGetContacts(since) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.GetContacts);
@@ -117,9 +128,41 @@ class Device {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandAddUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.AddUpdateContact);
+        data.writeBytes(publicKey);
+        data.writeByte(type);
+        data.writeByte(flags);
+        data.writeByte(outPathLen);
+        data.writeBytes(outPath); // 64 bytes
+        data.writeCString(advName, 32); // 32 bytes
+        data.writeUInt32LE(lastAdvert);
+        data.writeUInt32LE(advLat);
+        data.writeUInt32LE(advLon);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandSyncNextMessage() {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.SyncNextMessage);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
+    async sendCommandSetRadioParams(radioFreq, radioBw, radioSf, radioCr) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SetRadioParams);
+        data.writeUInt32LE(radioFreq);
+        data.writeUInt32LE(radioBw);
+        data.writeByte(radioSf);
+        data.writeByte(radioCr);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
+    async sendCommandSetTxPower(txPower) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SetTxPower);
+        data.writeByte(txPower);
         await this.sendToRadioFrame(data.toBytes());
     }
 
@@ -209,6 +252,8 @@ class Device {
             this.onSelfInfoResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.CurrTime){
             this.onCurrTimeResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.NoMoreMessages){
+            this.onNoMoreMessagesResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.ContactMsgRecv){
             this.onContactMsgRecvResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.ContactsStart){
@@ -217,8 +262,12 @@ class Device {
             this.onContactResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.EndOfContacts){
             this.onEndOfContactsResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.Sent){
+            this.onSentResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.SendConfirmed){
+            this.onSendConfirmedPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.MsgWaiting){
             this.onMsgWaitingPush(bufferReader);
         } else {
@@ -230,6 +279,13 @@ class Device {
     onAdvertPush(bufferReader) {
         console.log("onAdvertPush", {
             publicKey: bufferReader.readBytes(32),
+        });
+    }
+
+    onSendConfirmedPush(bufferReader) {
+        console.log("onSendConfirmedPush", {
+            ackCode: bufferReader.readBytes(4),
+            roundTrip: bufferReader.readUInt32LE(),
         });
     }
 
@@ -266,6 +322,12 @@ class Device {
         });
     }
 
+    onSentResponse(bufferReader) {
+        console.log("onSentResponse", {
+
+        });
+    }
+
     onSelfInfoResponse(bufferReader) {
         console.log("onSelfInfoResponse", {
             type: bufferReader.readByte(),
@@ -284,6 +346,12 @@ class Device {
     onCurrTimeResponse(bufferReader) {
         console.log("onCurrTimeResponse", {
             epochSecs: bufferReader.readUInt32LE(),
+        });
+    }
+
+    onNoMoreMessagesResponse(bufferReader) {
+        console.log("onNoMoreMessagesResponse", {
+
         });
     }
 

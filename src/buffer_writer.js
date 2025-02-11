@@ -39,6 +39,27 @@ class BufferWriter {
         this.writeBytes(new TextEncoder().encode(string));
     }
 
+    writeCString(string, maxLength) {
+
+        // create buffer of max length
+        const bytes = new Uint8Array(new ArrayBuffer(maxLength));
+
+        // encode string to bytes
+        const encodedString = new TextEncoder().encode(string);
+
+        // copy in string until we hit the max length, or we run out of string bytes
+        for(var i = 0; i < maxLength && i < encodedString.length; i++){
+            bytes[i] = encodedString[i];
+        }
+
+        // ensure the last byte is always a null terminator
+        bytes[bytes.length - 1] = 0;
+
+        // write to buffer
+        this.writeBytes(bytes);
+
+    }
+
 }
 
 export default BufferWriter;

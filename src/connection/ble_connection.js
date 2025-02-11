@@ -79,6 +79,8 @@ class BleConnection extends Connection {
 
     async write(bytes) {
         try {
+            // fixme: NetworkError: GATT operation already in progress.
+            // todo: implement mutex to prevent multiple writes when another write is in progress
             // we write to the rx characteristic, as that's where the radio reads from
             await this.rxCharacteristic.writeValue(bytes);
         } catch(e) {

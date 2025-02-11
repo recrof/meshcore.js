@@ -15,7 +15,7 @@
     <!-- header -->
     <div class="flex border bg-gray-50 p-3 rounded shadow">
         <div class="my-auto">
-            <div class="font-bold">MeshCore Client</div>
+            <div class="font-bold">MeshCore Connection</div>
             <div class="text-sm">Developed by <a target="_blank" href="https://liamcottle.com" class="text-blue-500 hover:underline">Liam Cottle</a></div>
         </div>
     </div>
@@ -24,7 +24,10 @@
 
         <div class="p-3 border-t space-x-1">
             <button @click="askForSerialPort" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
-                Connect
+                Connect (Serial)
+            </button>
+            <button @click="askForBleDevice" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Connect (BLE)
             </button>
             <button @click="disconnect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Disconnect
@@ -81,8 +84,9 @@
 </div>
 
 <script type="module">
-    import Device from "./src/device.js";
     import Constants from "./src/constants.js";
+    import SerialConnection from "./src/connection/serial_connection.js";
+    import BleConnection from "./src/connection/ble_connection.js";
     Vue.createApp({
         data() {
             return {
@@ -94,28 +98,19 @@
         },
         methods: {
             async askForSerialPort() {
-
-                if(!navigator.serial){
-                    alert("Web Serial is not supported in this browser");
-                    return null;
-                }
-
-                // ask user to select device
-                const serialPort = await navigator.serial.requestPort({
-                    filters: [],
-                });
-
-                this.device = await Device.fromSerialPort(serialPort);
-
+                this.connection = await SerialConnection.open();
+            },
+            async askForBleDevice() {
+                this.connection = await BleConnection.open();
             },
             async disconnect() {
-                if(this.device){
-                    await this.device.close();
+                if(this.connection){
+                    await this.connection.close();
                     this.device = null;
                 }
             },
             async sendCommandAppStart() {
-                await this.device.sendCommandAppStart();
+                await this.connection.sendCommandAppStart();
             },
             async sendCommandSendTxtMsg() {
                 const txtType = Constants.TxtTypes.Plain;
@@ -123,35 +118,35 @@
                 const senderTimestamp = Math.floor(Date.now() / 1000);
                 const pubKeyPrefix = new Uint8Array([148, 63, 175, 162, 88, 212, 192, 40, 214, 185, 213, 140, 42, 145, 194, 186, 70, 71, 112, 68, 0, 192, 65, 4, 105, 143, 230, 50, 162, 79, 247, 192]);
                 const text = `Test Message: ${senderTimestamp}`;
-                await this.device.sendCommandSendTxtMsg(txtType, attempt, senderTimestamp, pubKeyPrefix, text);
+                await this.connection.sendCommandSendTxtMsg(txtType, attempt, senderTimestamp, pubKeyPrefix, text);
             },
             async sendSendSelfAdvert(type) {
-                await this.device.sendCommandSendSelfAdvert(type);
+                await this.connection.sendCommandSendSelfAdvert(type);
             },
             async sendCommandGetContacts() {
-                await this.device.sendCommandGetContacts();
+                await this.connection.sendCommandGetContacts();
             },
             async sendCommandGetDeviceTime() {
-                await this.device.sendCommandGetDeviceTime();
+                await this.connection.sendCommandGetDeviceTime();
             },
             async sendCommandSetDeviceTime() {
                 const timestamp = Math.floor(Date.now() / 1000);
-                await this.device.sendCommandSetDeviceTime(timestamp);
+                await this.connection.sendCommandSetDeviceTime(timestamp);
             },
             async sendCommandSetTxPower() {
                 const txPower = 22;
-                await this.device.sendCommandSetTxPower(txPower);
+                await this.connection.sendCommandSetTxPower(txPower);
             },
             async sendCommandResetPath() {
                 const publicKey = new Uint8Array([244, 231, 60, 250, 245, 218, 131, 156, 156, 98, 130, 39, 222, 43, 123, 147, 98, 200, 218, 251, 242, 89, 111, 108, 25, 191, 127, 151, 222, 192, 233, 177]);
-                await this.device.sendCommandResetPath(publicKey);
+                await this.connection.sendCommandResetPath(publicKey);
             },
             async sendCommandSetRadioParams() {
                 const radioFreq = 917375;
                 const radioBw = 250000;
                 const radioSf = 7;
                 const radioCr = 5;
-                await this.device.sendCommandSetRadioParams(radioFreq, radioBw, radioSf, radioCr);
+                await this.connection.sendCommandSetRadioParams(radioFreq, radioBw, radioSf, radioCr);
             },
             async sendCommandSetAdvertName() {
 
@@ -162,17 +157,17 @@
                 }
 
                 // set name
-                await this.device.sendCommandSetAdvertName(name);
+                await this.connection.sendCommandSetAdvertName(name);
 
             },
             async sendCommandSetAdvertLatLon() {
                 const lat = 123;
                 const lon = 456;
-                await this.device.sendCommandSetAdvertLatLon(lat, lon);
+                await this.connection.sendCommandSetAdvertLatLon(lat, lon);
             },
             async sendCommandRemoveContact() {
                 const publicKey = new Uint8Array([148, 63, 175, 162, 88, 212, 192, 40, 214, 185, 213, 140, 42, 145, 194, 186, 70, 71, 112, 68, 0, 192, 65, 4, 105, 143, 230, 50, 162, 79, 247, 192]);
-                await this.device.sendCommandRemoveContact(publicKey);
+                await this.connection.sendCommandRemoveContact(publicKey);
             },
             async sendCommandAddUpdateContact() {
                 const publicKey = new Uint8Array([148, 63, 175, 162, 88, 212, 192, 40, 214, 185, 213, 140, 42, 145, 194, 186, 70, 71, 112, 68, 0, 192, 65, 4, 105, 143, 230, 50, 162, 79, 247, 192]);
@@ -184,10 +179,10 @@
                 const lastAdvert = 1739244825;
                 const advLat = 0;
                 const advLon = 0;
-                await this.device.sendCommandAddUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon);
+                await this.connection.sendCommandAddUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon);
             },
             async sendCommandSyncNextMessage() {
-                await this.device.sendCommandSyncNextMessage();
+                await this.connection.sendCommandSyncNextMessage();
             },
         },
     }).mount('#app');

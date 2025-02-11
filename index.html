@@ -110,10 +110,14 @@
                 <div v-for="contact of contacts" class="flex px-2 py-1">
                     <div class="my-auto mr-auto">
                         <div class="font-semibold">{{ contact.advName }}</div>
+                        <div class="text-sm text-gray-500"><{{ bytesToHex(contact.publicKey) }}></div>
                         <div class="text-sm text-gray-500">Type: {{ contactTypeToString(contact.type) }} • Last Advert: {{ contact.lastAdvert }}</div>
                     </div>
                     <div class="my-auto mx-2">
-                        <div @click="removeContact(contact)" class="hover:underline">Forget</div>
+                        <div @click="sendMessage(contact)" class="hover:underline cursor-pointer">Send Message</div>
+                    </div>
+                    <div class="my-auto mx-2">
+                        <div @click="removeContact(contact)" class="hover:underline cursor-pointer">Forget</div>
                     </div>
                 </div>
             </div>
@@ -265,6 +269,25 @@
             async sendCommandSyncNextMessage() {
                 await this.connection.sendCommandSyncNextMessage();
             },
+            async sendMessage(contact) {
+
+                // ask user for message
+                const message = prompt("Enter message to send");
+                if(!message){
+                    return;
+                }
+
+                // compose message
+                const txtType = Constants.TxtTypes.Plain;
+                const attempt = 0;
+                const senderTimestamp = Math.floor(Date.now() / 1000);
+                const pubKeyPrefix = contact.publicKey;
+                const text = message;
+
+                // send message
+                await this.connection.sendCommandSendTxtMsg(txtType, attempt, senderTimestamp, pubKeyPrefix, text);
+
+            },
             async removeContact(contact) {
 
                 // ask user to confirm action
@@ -278,6 +301,9 @@
                 // reload contacts
                 await this.loadContacts();
 
+            },
+            bytesToHex(uint8Array) {
+                return Array.from(uint8Array).map(byte => byte.toString(16).padStart(2, '0')).join('');
             },
         },
     }).mount('#app');

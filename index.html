@@ -26,6 +26,9 @@
             <button @click="askForSerialPort" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Connect
             </button>
+            <button @click="disconnect" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                Disconnect
+            </button>
             <button @click="sendCommandAppStart" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                 Send AppStart
             </button>
@@ -82,6 +85,12 @@
 
                 this.device = await Device.fromSerialPort(serialPort);
 
+            },
+            async disconnect() {
+                if(this.device){
+                    await this.device.close();
+                    this.device = null;
+                }
             },
             async sendCommandAppStart() {
                 await this.device.sendCommandAppStart();

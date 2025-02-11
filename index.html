@@ -142,18 +142,21 @@
             async askForSerialPort() {
                 this.connection = await SerialConnection.open();
                 this.connection.on("connected", () => this.onConnected());
+                this.connection.on("disconnected", () => this.onDisconnected());
                 // this.connection.on("tx", (data) => console.log("tx", data));
                 // this.connection.on("rx", (data) => console.log("rx", data));
             },
             async askForBleDevice() {
                 this.connection = await BleConnection.open();
                 this.connection.on("connected", () => this.onConnected());
+                this.connection.on("disconnected", () => this.onDisconnected());
                 // this.connection.on("tx", (data) => console.log("tx", data));
                 // this.connection.on("rx", (data) => console.log("rx", data));
             },
             async disconnect() {
                 if(this.connection){
                     await this.connection.close();
+                    this.onDisconnected();
                     this.connection = null;
                 }
             },
@@ -165,6 +168,10 @@
                     console.log("on advert");
                     await this.loadContacts();
                 });
+            },
+            onDisconnected() {
+                console.log("disconnected");
+                this.connection = null;
             },
             async loadSelfInfo() {
                 this.selfInfo = await this.connection.getSelfInfo();

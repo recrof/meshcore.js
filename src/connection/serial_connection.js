@@ -15,6 +15,11 @@ class SerialConnection extends Connection {
         this.readBuffer = [];
         this.readLoop();
 
+        // listen for disconnect
+        this.serialPort.addEventListener("disconnect", () => {
+            this.emit("disconnected");
+        });
+
         // fire connected callback after constructor has returned
         setTimeout(() => {
             this.onConnected();

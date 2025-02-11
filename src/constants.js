@@ -18,6 +18,7 @@ class Constants {
         SyncNextMessage: 10, // done
         SetRadioParams: 11, // done
         SetTxPower: 12, // done
+        SetAdvertLatLon: 14,
     }
 
     static ResponseCodes = {

@@ -99,9 +99,13 @@
         methods: {
             async askForSerialPort() {
                 this.connection = await SerialConnection.open();
+                this.connection.on("tx", (data) => console.log("tx", data));
+                this.connection.on("rx", (data) => console.log("rx", data));
             },
             async askForBleDevice() {
                 this.connection = await BleConnection.open();
+                this.connection.on("tx", (data) => console.log("tx", data));
+                this.connection.on("rx", (data) => console.log("rx", data));
             },
             async disconnect() {
                 if(this.connection){

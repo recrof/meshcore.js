@@ -1,8 +1,9 @@
 import BufferWriter from "../buffer_writer.js";
 import BufferReader from "../buffer_reader.js";
 import Constants from "../constants.js";
+import EventEmitter from "../events.js";
 
-class Connection {
+class Connection extends EventEmitter {
 
     async close() {
         throw new Error("This method must be implemented by the subclass.");
@@ -130,7 +131,8 @@ class Connection {
 
     onFrameReceived(frame) {
 
-        // console.log("onFrameReceived", frame);
+        // emit received frame
+        this.emit("rx", frame);
 
         const bufferReader = new BufferReader(frame);
         const responseCode = bufferReader.readByte();
@@ -164,32 +166,32 @@ class Connection {
     }
 
     onAdvertPush(bufferReader) {
-        console.log("onAdvertPush", {
+        this.emit("AdvertPush", {
             publicKey: bufferReader.readBytes(32),
         });
     }
 
     onSendConfirmedPush(bufferReader) {
-        console.log("onSendConfirmedPush", {
+        this.emit("SendConfirmedPush", {
             ackCode: bufferReader.readBytes(4),
             roundTrip: bufferReader.readUInt32LE(),
         });
     }
 
     onMsgWaitingPush(bufferReader) {
-        console.log("onMsgWaitingPush", {
+        this.emit("MsgWaitingPush", {
 
         });
     }
 
     onContactsStartResponse(bufferReader) {
-        console.log("onContactsStartResponse", {
+        this.emit("ContactsStartResponse", {
             count: bufferReader.readUInt32LE(),
         });
     }
 
     onContactResponse(bufferReader) {
-        console.log("onContactResponse", {
+        this.emit("ContactResponse", {
             publicKey: bufferReader.readBytes(32),
             type: bufferReader.readByte(),
             flags: bufferReader.readByte(),
@@ -204,19 +206,19 @@ class Connection {
     }
 
     onEndOfContactsResponse(bufferReader) {
-        console.log("onEndOfContactsResponse", {
+        this.emit("EndOfContactsResponse", {
             mostRecentLastmod: bufferReader.readUInt32LE(),
         });
     }
 
     onSentResponse(bufferReader) {
-        console.log("onSentResponse", {
+        this.emit("SentResponse", {
 
         });
     }
 
     onSelfInfoResponse(bufferReader) {
-        console.log("onSelfInfoResponse", {
+        this.emit("SelfInfoResponse", {
             type: bufferReader.readByte(),
             txPower: bufferReader.readByte(),
             maxTxPower: bufferReader.readByte(),
@@ -233,19 +235,19 @@ class Connection {
     }
 
     onCurrTimeResponse(bufferReader) {
-        console.log("onCurrTimeResponse", {
+        this.emit("CurrTimeResponse", {
             epochSecs: bufferReader.readUInt32LE(),
         });
     }
 
     onNoMoreMessagesResponse(bufferReader) {
-        console.log("onNoMoreMessagesResponse", {
+        this.emit("NoMoreMessagesResponse", {
 
         });
     }
 
     onContactMsgRecvResponse(bufferReader) {
-        console.log("onContactMsgRecvResponse", {
+        this.emit("ContactMsgRecvResponse", {
             pubKeyPrefix: bufferReader.readBytes(6),
             pathLen: bufferReader.readByte(),
             txtType: bufferReader.readByte(),

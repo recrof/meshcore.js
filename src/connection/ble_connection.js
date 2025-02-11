@@ -88,8 +88,9 @@ class BleConnection extends Connection {
         }
     }
 
-    async sendToRadioFrame(data) {
-        await this.write(data);
+    async sendToRadioFrame(frame) {
+        this.emit("tx", frame);
+        await this.write(frame);
     }
 
 }

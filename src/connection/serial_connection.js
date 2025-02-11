@@ -82,6 +82,7 @@ class SerialConnection extends Connection {
 
     async sendToRadioFrame(data) {
         // write "app to radio" frame 0x3c "<"
+        this.emit("tx", data);
         await this.writeFrame(0x3c, data);
     }
 

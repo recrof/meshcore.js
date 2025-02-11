@@ -165,13 +165,20 @@
                 }
             },
             async onConnected() {
+
                 console.log("connected");
                 await this.loadSelfInfo();
                 await this.loadContacts();
+
                 this.connection.on(Constants.PushCodes.Advert, async () => {
                     console.log("on advert");
                     await this.loadContacts();
                 });
+
+                this.connection.on(Constants.PushCodes.PathUpdated, async (event) => {
+                    console.log("PathUpdated", event);
+                });
+
             },
             onDisconnected() {
                 console.log("disconnected");

@@ -163,6 +163,8 @@ class Connection extends EventEmitter {
             this.onSentResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.PathUpdated){
+            this.onPathUpdatedPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.SendConfirmed){
             this.onSendConfirmedPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.MsgWaiting){
@@ -175,6 +177,12 @@ class Connection extends EventEmitter {
 
     onAdvertPush(bufferReader) {
         this.emit(Constants.PushCodes.Advert, {
+            publicKey: bufferReader.readBytes(32),
+        });
+    }
+
+    onPathUpdatedPush(bufferReader) {
+        this.emit(Constants.PushCodes.PathUpdated, {
             publicKey: bufferReader.readBytes(32),
         });
     }

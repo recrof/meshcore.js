@@ -44,7 +44,7 @@ class BleConnection extends Connection {
 
         // listen for ble disconnect
         this.bleDevice.addEventListener("gattserverdisconnected", () => {
-            this.emit("disconnected");
+            this.onDisconnected();
         });
 
         // connect to gatt server

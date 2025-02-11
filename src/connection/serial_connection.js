@@ -17,7 +17,7 @@ class SerialConnection extends Connection {
 
         // listen for disconnect
         this.serialPort.addEventListener("disconnect", () => {
-            this.emit("disconnected");
+            this.onDisconnected();
         });
 
         // fire connected callback after constructor has returned

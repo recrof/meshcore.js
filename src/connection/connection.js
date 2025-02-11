@@ -9,6 +9,10 @@ class Connection extends EventEmitter {
         this.emit("connected");
     }
 
+    onDisconnected() {
+        this.emit("disconnected");
+    }
+
     async close() {
         throw new Error("This method must be implemented by the subclass.");
     }

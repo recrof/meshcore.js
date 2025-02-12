@@ -231,8 +231,17 @@
                 await this.connection.sendCommandSetDeviceTime(timestamp);
             },
             async sendCommandSetTxPower() {
-                const txPower = 22;
+
+                // ask user for tx power
+                const txPowerString = prompt("Please enter TX power in dBm");
+                if(!txPowerString){
+                    return;
+                }
+
+                // update tx power
+                const txPower = parseInt(txPowerString);
                 await this.connection.sendCommandSetTxPower(txPower);
+
             },
             async sendCommandSetRadioParams() {
                 const radioFreq = 917375;

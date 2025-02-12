@@ -287,6 +287,14 @@ class Connection extends EventEmitter {
         });
     }
 
+    async sendFloodAdvert() {
+        await this.sendCommandSendSelfAdvert(Constants.SelfAdvertTypes.Flood);
+    }
+
+    async sendZeroHopAdvert() {
+        await this.sendCommandSendSelfAdvert(Constants.SelfAdvertTypes.ZeroHop);
+    }
+
     getContacts() {
         return new Promise(async (resolve, reject) => {
 

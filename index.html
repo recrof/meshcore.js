@@ -59,10 +59,10 @@
                 <button @click="sendCommandAppStart" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     AppStart
                 </button>
-                <button @click="sendSendSelfAdvert(0)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="sendZeroHopAdvert" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     Advert (ZeroHop)
                 </button>
-                <button @click="sendSendSelfAdvert(1)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="sendFloodAdvert" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     Advert (Flood)
                 </button>
                 <button @click="sendCommandSetAdvertName" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
@@ -216,8 +216,11 @@
                 const selfInfo = await this.connection.getSelfInfo();
                 console.log(selfInfo);
             },
-            async sendSendSelfAdvert(type) {
-                await this.connection.sendCommandSendSelfAdvert(type);
+            async sendZeroHopAdvert() {
+                await this.connection.sendZeroHopAdvert();
+            },
+            async sendFloodAdvert() {
+                await this.connection.sendFloodAdvert();
             },
             async sendCommandGetContacts() {
                 this.contacts = await this.connection.getContacts();

@@ -229,7 +229,8 @@ class Connection extends EventEmitter {
 
     onSentResponse(bufferReader) {
         this.emit(Constants.ResponseCodes.Sent, {
-
+            expectedAckCrc: bufferReader.readUInt32LE(),
+            estTimeout: bufferReader.readUInt32LE(),
         });
     }
 
@@ -307,6 +308,29 @@ class Connection extends EventEmitter {
             // request contacts from device
             await this.sendCommandGetContacts();
 
+        });
+    }
+
+    sendTextMessage(contactPublicKey, text) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve with the first sent response
+                this.once(Constants.ResponseCodes.Sent, (response) => {
+                    resolve(response);
+                });
+
+                // compose message
+                const txtType = Constants.TxtTypes.Plain;
+                const attempt = 0;
+                const senderTimestamp = Math.floor(Date.now() / 1000);
+
+                // send message
+                await this.sendCommandSendTxtMsg(txtType, attempt, senderTimestamp, contactPublicKey, text);
+
+            } catch(e) {
+                reject(e);
+            }
         });
     }
 

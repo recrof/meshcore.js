@@ -291,15 +291,9 @@
                     return;
                 }
 
-                // compose message
-                const txtType = Constants.TxtTypes.Plain;
-                const attempt = 0;
-                const senderTimestamp = Math.floor(Date.now() / 1000);
-                const pubKeyPrefix = contact.publicKey;
-                const text = message;
-
                 // send message
-                await this.connection.sendCommandSendTxtMsg(txtType, attempt, senderTimestamp, pubKeyPrefix, text);
+                const response = await this.connection.sendTextMessage(contact.publicKey, message);
+                console.log(response);
 
             },
             async resetPath(contact) {

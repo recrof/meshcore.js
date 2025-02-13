@@ -155,7 +155,11 @@ class Connection extends EventEmitter {
         const bufferReader = new BufferReader(frame);
         const responseCode = bufferReader.readByte();
 
-        if(responseCode === Constants.ResponseCodes.SelfInfo){
+        if(responseCode === Constants.ResponseCodes.Ok){
+            this.onOkResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.Err){
+            this.onErrResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.SelfInfo){
             this.onSelfInfoResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.CurrTime){
             this.onCurrTimeResponse(bufferReader);
@@ -208,6 +212,18 @@ class Connection extends EventEmitter {
 
     onMsgWaitingPush(bufferReader) {
         this.emit(Constants.PushCodes.MsgWaiting, {
+
+        });
+    }
+
+    onOkResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.Ok, {
+
+        });
+    }
+
+    onErrResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.Err, {
 
         });
     }

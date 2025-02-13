@@ -229,7 +229,7 @@ class Connection extends EventEmitter {
 
     onSentResponse(bufferReader) {
         this.emit(Constants.ResponseCodes.Sent, {
-            result: bufferReader.readBytes(1),
+            result: bufferReader.readInt8(),
             expectedAckCrc: bufferReader.readUInt32LE(),
             estTimeout: bufferReader.readUInt32LE(),
         });

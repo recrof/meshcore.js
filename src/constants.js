@@ -14,7 +14,7 @@ class Constants {
     static CommandCodes = {
         AppStart: 1,
         SendTxtMsg: 2,
-        SendChannelTxtMsg: 3, // todo
+        SendChannelTxtMsg: 3,
         GetContacts: 4,
         GetDeviceTime: 5,
         SetDeviceTime: 6,
@@ -38,14 +38,14 @@ class Constants {
         SelfInfo: 5,
         Sent: 6,
         ContactMsgRecv: 7,
-        ChannelMsgRecv: 8, // todo
+        ChannelMsgRecv: 8,
         CurrTime: 9,
         NoMoreMessages: 10,
     }
 
     static PushCodes = {
         Advert: 0x80,
-        PathUpdated: 0x81, // todo
+        PathUpdated: 0x81,
         SendConfirmed: 0x82,
         MsgWaiting: 0x83,
     }

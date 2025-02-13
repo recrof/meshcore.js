@@ -41,6 +41,16 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSendChannelTxtMsg(txtType, channelIdx, senderTimestamp, text) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendChannelTxtMsg);
+        data.writeByte(txtType);
+        data.writeByte(channelIdx);
+        data.writeUInt32LE(senderTimestamp);
+        data.writeString(text);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandGetContacts(since) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.GetContacts);
@@ -153,6 +163,8 @@ class Connection extends EventEmitter {
             this.onNoMoreMessagesResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.ContactMsgRecv){
             this.onContactMsgRecvResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.ChannelMsgRecv){
+            this.onChannelMsgRecvResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.ContactsStart){
             this.onContactsStartResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.Contact){
@@ -274,6 +286,16 @@ class Connection extends EventEmitter {
         });
     }
 
+    onChannelMsgRecvResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.ChannelMsgRecv, {
+            channelIdx: bufferReader.readInt8(), // reserved (0 for now, ie. 'public')
+            pathLen: bufferReader.readByte(), // 0xFF if was sent direct, otherwise hop count for flood-mode
+            txtType: bufferReader.readByte(),
+            senderTimestamp: bufferReader.readUInt32LE(),
+            text: bufferReader.readString(),
+        });
+    }
+
     getSelfInfo() {
         return new Promise(async (resolve, reject) => {
 
@@ -343,25 +365,71 @@ class Connection extends EventEmitter {
         });
     }
 
+    sendChannelTextMessage(channelIdx, text) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve();
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // compose message
+                const txtType = Constants.TxtTypes.Plain;
+                const senderTimestamp = Math.floor(Date.now() / 1000);
+
+                // send message
+                await this.sendCommandSendChannelTxtMsg(txtType, channelIdx, senderTimestamp, text);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     syncNextMessage() {
         return new Promise(async (resolve, reject) => {
 
-            // resolve promise when we receive the message
+            // resolve promise when we receive a contact message
             const onContactMessageReceived = (message) => {
                 this.off(Constants.ResponseCodes.ContactMsgRecv, onContactMessageReceived);
+                this.off(Constants.ResponseCodes.ChannelMsgRecv, onChannelMessageReceived);
                 this.off(Constants.ResponseCodes.NoMoreMessages, onNoMoreMessagesReceived);
-                resolve(message);
+                resolve({
+                    contactMessage: message,
+                });
+            }
+
+            // resolve promise when we receive a channel message
+            const onChannelMessageReceived = (message) => {
+                this.off(Constants.ResponseCodes.ContactMsgRecv, onContactMessageReceived);
+                this.off(Constants.ResponseCodes.ChannelMsgRecv, onChannelMessageReceived);
+                this.off(Constants.ResponseCodes.NoMoreMessages, onNoMoreMessagesReceived);
+                resolve({
+                    channelMessage: message,
+                });
             }
 
             // resolve promise when we have no more messages to receive
             const onNoMoreMessagesReceived = () => {
                 this.off(Constants.ResponseCodes.ContactMsgRecv, onContactMessageReceived);
+                this.off(Constants.ResponseCodes.ChannelMsgRecv, onChannelMessageReceived);
                 this.off(Constants.ResponseCodes.NoMoreMessages, onNoMoreMessagesReceived);
                 resolve(null);
             }
 
             // listen for events
             this.once(Constants.ResponseCodes.ContactMsgRecv, onContactMessageReceived);
+            this.once(Constants.ResponseCodes.ChannelMsgRecv, onChannelMessageReceived);
             this.once(Constants.ResponseCodes.NoMoreMessages, onNoMoreMessagesReceived);
 
             // sync next message from device

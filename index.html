@@ -89,6 +89,9 @@
                 <button @click="sendCommandSetTxPower" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SetTxPower
                 </button>
+                <button @click="sendChannelTextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SendChannelTxtMessage
+                </button>
             </div>
         </div>
 
@@ -284,7 +287,8 @@
                 await this.connection.sendCommandAddUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon);
             },
             async sendCommandSyncNextMessage() {
-                await this.connection.sendCommandSyncNextMessage();
+                const message = await this.connection.syncNextMessage();
+                console.log("syncNextMessage", message);
             },
             async sendMessage(contact) {
 
@@ -297,6 +301,17 @@
                 // send message
                 const response = await this.connection.sendTextMessage(contact.publicKey, message);
                 console.log(response);
+
+            },
+            async sendChannelTextMessage() {
+
+                // ask user for message
+                const message = prompt("Enter message to send");
+                if(!message){
+                    return;
+                }
+
+                await this.connection.sendChannelTextMessage(0, message);
 
             },
             async resetPath(contact) {

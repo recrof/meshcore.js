@@ -343,6 +343,33 @@ class Connection extends EventEmitter {
         });
     }
 
+    syncNextMessage() {
+        return new Promise(async (resolve, reject) => {
+
+            // resolve promise when we receive the message
+            const onContactMessageReceived = (message) => {
+                this.off(Constants.ResponseCodes.ContactMsgRecv, onContactMessageReceived);
+                this.off(Constants.ResponseCodes.NoMoreMessages, onNoMoreMessagesReceived);
+                resolve(message);
+            }
+
+            // resolve promise when we have no more messages to receive
+            const onNoMoreMessagesReceived = () => {
+                this.off(Constants.ResponseCodes.ContactMsgRecv, onContactMessageReceived);
+                this.off(Constants.ResponseCodes.NoMoreMessages, onNoMoreMessagesReceived);
+                resolve(null);
+            }
+
+            // listen for events
+            this.once(Constants.ResponseCodes.ContactMsgRecv, onContactMessageReceived);
+            this.once(Constants.ResponseCodes.NoMoreMessages, onNoMoreMessagesReceived);
+
+            // sync next message from device
+            await this.sendCommandSyncNextMessage();
+
+        });
+    }
+
 }
 
 export default Connection;

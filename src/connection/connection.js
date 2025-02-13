@@ -383,6 +383,10 @@ class Connection extends EventEmitter {
                     reject();
                 }
 
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
                 // compose message
                 const txtType = Constants.TxtTypes.Plain;
                 const senderTimestamp = Math.floor(Date.now() / 1000);

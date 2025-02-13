@@ -189,7 +189,7 @@ class Connection extends EventEmitter {
 
     onSendConfirmedPush(bufferReader) {
         this.emit(Constants.PushCodes.SendConfirmed, {
-            ackCode: bufferReader.readBytes(4),
+            ackCode: bufferReader.readUInt32LE(),
             roundTrip: bufferReader.readUInt32LE(),
         });
     }

@@ -345,7 +345,7 @@ class Connection extends EventEmitter {
         });
     }
 
-    getSelfInfo() {
+    getSelfInfo(timeoutMillis = null) {
         return new Promise(async (resolve, reject) => {
 
             // listen for response
@@ -353,7 +353,10 @@ class Connection extends EventEmitter {
                 resolve(selfInfo);
             });
 
-            // todo add timeout in case user connected to unsupported device
+            // timeout after provided milliseconds if device did not respond
+            if(timeoutMillis != null){
+                setTimeout(reject, timeoutMillis);
+            }
 
             // request self info
             await this.sendCommandAppStart();

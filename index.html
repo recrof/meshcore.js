@@ -177,7 +177,15 @@
             async onConnected() {
 
                 console.log("connected");
-                await this.loadSelfInfo();
+
+                try {
+                    await this.loadSelfInfo();
+                } catch(e) {
+                    alert("Disconnected: timed out waiting for self info");
+                    await this.disconnect();
+                    return;
+                }
+
                 await this.loadContacts();
 
                 this.connection.on(Constants.PushCodes.Advert, async () => {

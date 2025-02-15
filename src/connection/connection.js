@@ -195,6 +195,8 @@ class Connection extends EventEmitter {
             this.onEndOfContactsResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.Sent){
             this.onSentResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.ExportContact){
+            this.onExportContactResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.PathUpdated){
@@ -278,6 +280,13 @@ class Connection extends EventEmitter {
             result: bufferReader.readInt8(),
             expectedAckCrc: bufferReader.readUInt32LE(),
             estTimeout: bufferReader.readUInt32LE(),
+        });
+    }
+
+    onExportContactResponse(bufferReader) {
+        const raw = bufferReader.readRemainingBytes();
+        this.emit(Constants.ResponseCodes.ExportContact, {
+            advertPacketBytes: raw,
         });
     }
 

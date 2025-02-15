@@ -15,6 +15,11 @@ class BufferReader {
         return data;
     }
 
+    readRemainingBytes() {
+        const remainingBytesCount = this.buffer.length - this.pointer;
+        return this.readBytes(remainingBytesCount);
+    }
+
     readString() {
         const remainingBytesCount = this.buffer.length - this.pointer;
         const remainingBytes = this.readBytes(remainingBytesCount);

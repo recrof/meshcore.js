@@ -255,7 +255,7 @@
             },
             async sendCommandSetDeviceTime() {
                 const timestamp = Math.floor(Date.now() / 1000);
-                await this.connection.sendCommandSetDeviceTime(timestamp);
+                await this.connection.setDeviceTime(timestamp);
             },
             async sendCommandSetTxPower() {
 

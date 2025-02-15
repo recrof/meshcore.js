@@ -29,6 +29,7 @@ class Constants {
         RemoveContact: 15,
         ShareContact: 16,
         ExportContact: 17,
+        ImportContact: 18,
     }
 
     static ResponseCodes = {

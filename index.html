@@ -92,6 +92,9 @@
                 <button @click="sendChannelTextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SendChannelTxtMessage
                 </button>
+                <button @click="importContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    ImportContact
+                </button>
                 <button @click="exportContact(null)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     ExportContact
                 </button>
@@ -348,6 +351,9 @@
             async exportContact(contact) {
                 await this.connection.sendCommandExportContact(contact?.publicKey);
             },
+            async importContact() {
+                await this.connection.sendCommandImportContact(this.hexToBytes("120070b78b64782bffb918da2d6432204a149bd232dd66373415b5f7ba24733ba2efe843b0674dc86210127e259f417a24150af38953dd2eb597a6a75a5c0a86adea7e81dbfc7023e4cc12bfe1b628aeaf76303f456545e555ae6554344b8391c2f07e9b010381506f636b6574204e6f64652031"));
+            },
             async setPath(contact) {
 
                 const newOutPath = [
@@ -370,6 +376,9 @@
             },
             bytesToHex(uint8Array) {
                 return Array.from(uint8Array).map(byte => byte.toString(16).padStart(2, '0')).join('');
+            },
+            hexToBytes(hex) {
+                return Uint8Array.from(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
             },
         },
     }).mount('#app');

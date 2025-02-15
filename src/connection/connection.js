@@ -165,6 +165,13 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandImportContact(advertPacketBytes) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.ImportContact);
+        data.writeBytes(advertPacketBytes); // raw advert packet bytes
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame

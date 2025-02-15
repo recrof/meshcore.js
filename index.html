@@ -362,7 +362,12 @@
                 await this.connection.sendCommandShareContact(contact.publicKey);
             },
             async exportContact(contact) {
-                await this.connection.sendCommandExportContact(contact?.publicKey);
+                try {
+                    const response = await this.connection.exportContact(contact?.publicKey);
+                    console.log(response);
+                } catch(e) {
+                    alert("Failed to export contact!");
+                }
             },
             async importContact() {
                 await this.connection.importContact(this.hexToBytes("120070b78b64782bffb918da2d6432204a149bd232dd66373415b5f7ba24733ba2efe843b0674dc86210127e259f417a24150af38953dd2eb597a6a75a5c0a86adea7e81dbfc7023e4cc12bfe1b628aeaf76303f456545e555ae6554344b8391c2f07e9b010381506f636b6574204e6f64652031"));

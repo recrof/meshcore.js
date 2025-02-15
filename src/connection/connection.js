@@ -881,6 +881,32 @@ class Connection extends EventEmitter {
         });
     }
 
+    setContactPath(contact, path) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // create empty out path
+                const maxPathLength = 64;
+                const outPath = new Uint8Array(maxPathLength);
+
+                // fill out path with the provided path
+                for(var i = 0; i < path.length && i < maxPathLength; i++){
+                    outPath[i] = path[i];
+                }
+
+                // update contact details with new path and path length
+                contact.outPathLen = path.length;
+                contact.outPath = outPath;
+
+                // update contact
+                return await this.addOrUpdateContact(contact.publicKey, contact.type, contact.flags, contact.outPathLen, contact.outPath, contact.advName, contact.lastAdvert, contact.advLat, contact.advLon);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     resetPath(pubKey) {
         return new Promise(async (resolve, reject) => {
             try {

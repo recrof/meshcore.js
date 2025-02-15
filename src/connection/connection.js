@@ -361,12 +361,43 @@ class Connection extends EventEmitter {
         });
     }
 
+    async sendAdvert(type) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve();
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // send advert
+                await this.sendCommandSendSelfAdvert(type);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     async sendFloodAdvert() {
-        await this.sendCommandSendSelfAdvert(Constants.SelfAdvertTypes.Flood);
+        return await this.sendAdvert(Constants.SelfAdvertTypes.Flood);
     }
 
     async sendZeroHopAdvert() {
-        await this.sendCommandSendSelfAdvert(Constants.SelfAdvertTypes.ZeroHop);
+        return await this.sendAdvert(Constants.SelfAdvertTypes.ZeroHop);
     }
 
     setAdvertName(name) {

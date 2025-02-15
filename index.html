@@ -338,7 +338,7 @@
             async resetPath(contact) {
 
                 // remove contact from device
-                await this.connection.sendCommandResetPath(contact.publicKey);
+                await this.connection.resetPath(contact.publicKey);
 
                 // reload contacts
                 await this.loadContacts();

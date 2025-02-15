@@ -352,7 +352,7 @@
                 }
 
                 // remove contact from device
-                await this.connection.sendCommandRemoveContact(contact.publicKey);
+                await this.connection.removeContact(contact.publicKey);
 
                 // reload contacts
                 await this.loadContacts();

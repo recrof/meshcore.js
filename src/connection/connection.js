@@ -353,6 +353,8 @@ class Connection extends EventEmitter {
                 resolve(selfInfo);
             });
 
+            // todo add timeout in case user connected to unsupported device
+
             // request self info
             await this.sendCommandAppStart();
 

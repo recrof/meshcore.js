@@ -190,6 +190,10 @@
                     await this.loadContacts();
                 });
 
+                this.connection.on(Constants.ResponseCodes.ExportContact, async (event) => {
+                    console.log("ExportContact", event);
+                });
+
             },
             onDisconnected() {
                 console.log("disconnected");

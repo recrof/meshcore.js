@@ -292,7 +292,7 @@
                 const lat = Math.floor(-38.661727955271765 * 1000000);
                 const lon = Math.floor(178.0236810462527 * 1000000);
                 console.log(lat, lon);
-                await this.connection.sendCommandSetAdvertLatLon(lat, lon);
+                await this.connection.setAdvertLatLong(lat, lon);
             },
             async sendCommandAddUpdateContact() {
                 const publicKey = new Uint8Array([148, 63, 175, 162, 88, 212, 192, 40, 214, 185, 213, 140, 42, 145, 194, 186, 70, 71, 112, 68, 0, 192, 65, 4, 105, 143, 230, 50, 162, 79, 247, 192]);

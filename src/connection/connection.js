@@ -434,6 +434,37 @@ class Connection extends EventEmitter {
         });
     }
 
+    setAdvertLatLong(latitude, longitude) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve();
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // set advert lat lon
+                await this.sendCommandSetAdvertLatLon(latitude, longitude);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     setTxPower(txPower) {
         return new Promise(async (resolve, reject) => {
             try {

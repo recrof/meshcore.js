@@ -28,6 +28,7 @@ class Constants {
         SetAdvertLatLon: 14,
         RemoveContact: 15,
         ShareContact: 16,
+        ExportContact: 17,
     }
 
     static ResponseCodes = {
@@ -42,6 +43,7 @@ class Constants {
         ChannelMsgRecv: 8,
         CurrTime: 9,
         NoMoreMessages: 10,
+        ExportContact: 11,
     }
 
     static PushCodes = {

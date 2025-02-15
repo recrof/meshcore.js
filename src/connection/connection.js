@@ -154,6 +154,17 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    // provide a public key to export that contact
+    // not providing a public key will export local identity as a contact instead
+    async sendCommandExportContact(pubKey = null) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.ExportContact);
+        if(pubKey){
+            data.writeBytes(pubKey); // 32 bytes
+        }
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame

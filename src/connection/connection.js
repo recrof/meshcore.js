@@ -850,6 +850,37 @@ class Connection extends EventEmitter {
         });
     }
 
+    addOrUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve();
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // add or update contact
+                await this.sendCommandAddUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     resetPath(pubKey) {
         return new Promise(async (resolve, reject) => {
             try {

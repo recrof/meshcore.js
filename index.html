@@ -65,28 +65,28 @@
                 <button @click="sendFloodAdvert" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     Advert (Flood)
                 </button>
-                <button @click="sendCommandSetAdvertName" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="setAdvertName" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SetAdvertName
                 </button>
-                <button @click="sendCommandSetAdvertLatLon" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="setAdvertLatLon" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SetAdvertLatLon
                 </button>
                 <button @click="sendCommandAddUpdateContact" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     AddUpdateContact
                 </button>
-                <button @click="sendCommandSyncNextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="syncNextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SyncNextMessage
                 </button>
-                <button @click="sendCommandGetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="getDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     GetDeviceTime
                 </button>
-                <button @click="sendCommandSetDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="setDeviceTime" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SetDeviceTime
                 </button>
-                <button @click="sendCommandSetRadioParams" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="setRadioParams" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SetRadioParams
                 </button>
-                <button @click="sendCommandSetTxPower" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                <button @click="setTxPower" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SetTxPower
                 </button>
                 <button @click="sendChannelTextMessage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
@@ -245,19 +245,19 @@
             async sendFloodAdvert() {
                 await this.connection.sendFloodAdvert();
             },
-            async sendCommandGetContacts() {
+            async getContacts() {
                 this.contacts = await this.connection.getContacts();
                 console.log(this.contacts);
             },
-            async sendCommandGetDeviceTime() {
+            async getDeviceTime() {
                 const deviceTime = await this.connection.getDeviceTime();
                 console.log(deviceTime);
             },
-            async sendCommandSetDeviceTime() {
+            async setDeviceTime() {
                 const timestamp = Math.floor(Date.now() / 1000);
                 await this.connection.setDeviceTime(timestamp);
             },
-            async sendCommandSetTxPower() {
+            async setTxPower() {
 
                 // ask user for tx power
                 const txPowerString = prompt("Please enter TX power in dBm");
@@ -270,14 +270,14 @@
                 await this.connection.setTxPower(txPower);
 
             },
-            async sendCommandSetRadioParams() {
+            async setRadioParams() {
                 const radioFreq = 917375;
                 const radioBw = 250000;
                 const radioSf = 7;
                 const radioCr = 5;
                 await this.connection.setRadioParams(radioFreq, radioBw, radioSf, radioCr);
             },
-            async sendCommandSetAdvertName() {
+            async setAdvertName() {
 
                 // ask user for name
                 const name = prompt("Please enter name");
@@ -286,10 +286,10 @@
                 }
 
                 // set name
-                await this.connection.sendCommandSetAdvertName(name);
+                await this.connection.setAdvertName(name);
 
             },
-            async sendCommandSetAdvertLatLon() {
+            async setAdvertLatLon() {
                 const lat = Math.floor(-38.661727955271765 * 1000000);
                 const lon = Math.floor(178.0236810462527 * 1000000);
                 console.log(lat, lon);
@@ -307,7 +307,7 @@
                 const advLon = 0;
                 await this.connection.sendCommandAddUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon);
             },
-            async sendCommandSyncNextMessage() {
+            async syncNextMessage() {
                 const message = await this.connection.syncNextMessage();
                 console.log("syncNextMessage", message);
             },
@@ -389,7 +389,7 @@
                 contact.outPath = outPath;
 
                 // update contact
-                await this.connection.sendCommandAddUpdateContact(contact.publicKey, contact.type, contact.flags, contact.outPathLen, contact.outPath, contact.advName, contact.lastAdvert, contact.advLat, contact.advLon);
+                await this.connection.addOrUpdateContact(contact.publicKey, contact.type, contact.flags, contact.outPathLen, contact.outPath, contact.advName, contact.lastAdvert, contact.advLat, contact.advLon);
 
             },
             bytesToHex(uint8Array) {

@@ -291,9 +291,8 @@ class Connection extends EventEmitter {
     }
 
     onExportContactResponse(bufferReader) {
-        const raw = bufferReader.readRemainingBytes();
         this.emit(Constants.ResponseCodes.ExportContact, {
-            advertPacketBytes: raw,
+            advertPacketBytes: bufferReader.readRemainingBytes(),
         });
     }
 

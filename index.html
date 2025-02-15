@@ -250,7 +250,8 @@
                 console.log(this.contacts);
             },
             async sendCommandGetDeviceTime() {
-                await this.connection.sendCommandGetDeviceTime();
+                const deviceTime = await this.connection.getDeviceTime();
+                console.log(deviceTime);
             },
             async sendCommandSetDeviceTime() {
                 const timestamp = Math.floor(Date.now() / 1000);

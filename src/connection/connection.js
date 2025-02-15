@@ -664,6 +664,37 @@ class Connection extends EventEmitter {
         });
     }
 
+    getDeviceTime() {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive sent response
+                const onCurrTime = (response) => {
+                    this.off(Constants.ResponseCodes.CurrTime, onCurrTime);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve(response);
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.CurrTime, onCurrTime);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.CurrTime, onCurrTime);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // get device time
+                await this.sendCommandGetDeviceTime();
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
 }
 
 export default Connection;

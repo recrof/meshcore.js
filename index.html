@@ -198,6 +198,11 @@
                     await this.loadContacts();
                 });
 
+                this.connection.on(Constants.PushCodes.MsgWaiting, async (event) => {
+                    console.log("MsgWaiting", event);
+                    await this.syncNextMessage();
+                });
+
                 this.connection.on(Constants.ResponseCodes.ExportContact, async (event) => {
                     console.log("ExportContact", event);
                 });
@@ -374,7 +379,7 @@
             },
             async setPath(contact) {
                 await this.connection.setContactPath(contact, [
-                    0xf4,
+                    0xd2,
                 ]);
             },
             bytesToHex(uint8Array) {

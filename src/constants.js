@@ -27,6 +27,7 @@ class Constants {
         ResetPath: 13,
         SetAdvertLatLon: 14,
         RemoveContact: 15,
+        ShareContact: 16,
     }
 
     static ResponseCodes = {

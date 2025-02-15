@@ -788,6 +788,37 @@ class Connection extends EventEmitter {
         });
     }
 
+    shareContact(pubKey) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = (response) => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve(response);
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // share contact
+                await this.sendCommandShareContact(pubKey);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     removeContact(pubKey) {
         return new Promise(async (resolve, reject) => {
             try {

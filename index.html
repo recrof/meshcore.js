@@ -359,7 +359,7 @@
 
             },
             async shareContact(contact) {
-                await this.connection.sendCommandShareContact(contact.publicKey);
+                await this.connection.shareContact(contact.publicKey);
             },
             async exportContact(contact) {
                 try {

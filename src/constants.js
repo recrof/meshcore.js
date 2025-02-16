@@ -31,6 +31,7 @@ class Constants {
         ExportContact: 17,
         ImportContact: 18,
         Reboot: 19,
+        GetBatteryVoltage: 20,
     }
 
     static ResponseCodes = {
@@ -46,6 +47,7 @@ class Constants {
         CurrTime: 9,
         NoMoreMessages: 10,
         ExportContact: 11,
+        BatteryVoltage: 12,
     }
 
     static PushCodes = {

@@ -178,6 +178,12 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandGetBatteryVoltage() {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.GetBatteryVoltage);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -210,6 +216,8 @@ class Connection extends EventEmitter {
             this.onSentResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.ExportContact){
             this.onExportContactResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.BatteryVoltage){
+            this.onBatteryVoltageResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.PathUpdated){
@@ -299,6 +307,12 @@ class Connection extends EventEmitter {
     onExportContactResponse(bufferReader) {
         this.emit(Constants.ResponseCodes.ExportContact, {
             advertPacketBytes: bufferReader.readRemainingBytes(),
+        });
+    }
+
+    onBatteryVoltageResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.BatteryVoltage, {
+            batteryMilliVolts: bufferReader.readUInt16LE(),
         });
     }
 
@@ -965,6 +979,37 @@ class Connection extends EventEmitter {
 
                 // reboot
                 await this.sendCommandReboot();
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    getBatteryVoltage() {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive battery voltage
+                const onBatteryVoltage = (response) => {
+                    this.off(Constants.ResponseCodes.BatteryVoltage, onBatteryVoltage);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve(response);
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.BatteryVoltage, onBatteryVoltage);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.BatteryVoltage, onBatteryVoltage);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // get battery voltage
+                await this.sendCommandGetBatteryVoltage();
 
             } catch(e) {
                 reject(e);

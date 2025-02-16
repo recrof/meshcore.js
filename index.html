@@ -101,6 +101,9 @@
                 <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     Reboot
                 </button>
+                <button @click="getBatteryVoltage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    GetBatteryVoltage
+                </button>
             </div>
         </div>
 
@@ -391,6 +394,14 @@
                     alert("Device is rebooting!");
                 } catch(e) {
                     alert("Failed to reboot!");
+                }
+            },
+            async getBatteryVoltage() {
+                try {
+                    const response = await this.connection.getBatteryVoltage();
+                    alert(`Battery Voltage: ${response.batteryMilliVolts}mV`);
+                } catch(e) {
+                    alert("Failed to get battery voltage!");
                 }
             },
             bytesToHex(uint8Array) {

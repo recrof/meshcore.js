@@ -98,6 +98,9 @@
                 <button @click="exportContact(null)" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     ExportContact
                 </button>
+                <button @click="reboot" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    Reboot
+                </button>
             </div>
         </div>
 
@@ -381,6 +384,14 @@
                 await this.connection.setContactPath(contact, [
                     0xd2,
                 ]);
+            },
+            async reboot() {
+                try {
+                    await this.connection.reboot();
+                    alert("Device is rebooting!");
+                } catch(e) {
+                    alert("Failed to reboot!");
+                }
             },
             bytesToHex(uint8Array) {
                 return Array.from(uint8Array).map(byte => byte.toString(16).padStart(2, '0')).join('');

@@ -30,6 +30,7 @@ class Constants {
         ShareContact: 16,
         ExportContact: 17,
         ImportContact: 18,
+        Reboot: 19,
     }
 
     static ResponseCodes = {

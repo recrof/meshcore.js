@@ -172,6 +172,12 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandReboot() {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.Reboot);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -931,6 +937,34 @@ class Connection extends EventEmitter {
 
                 // reset path
                 await this.sendCommandResetPath(pubKey);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    reboot() {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // assume device rebooted after a short delay
+                setTimeout(() => {
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve();
+                }, 1000);
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // reboot
+                await this.sendCommandReboot();
 
             } catch(e) {
                 reject(e);

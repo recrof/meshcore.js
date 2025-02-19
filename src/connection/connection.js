@@ -175,6 +175,7 @@ class Connection extends EventEmitter {
     async sendCommandReboot() {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.Reboot);
+        data.writeString("reboot");
         await this.sendToRadioFrame(data.toBytes());
     }
 

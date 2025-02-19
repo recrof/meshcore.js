@@ -32,6 +32,8 @@ class Constants {
         ImportContact: 18,
         Reboot: 19,
         GetBatteryVoltage: 20,
+        SetTuningParams: 21, // todo
+        DeviceQuery: 22,
     }
 
     static ResponseCodes = {
@@ -48,6 +50,7 @@ class Constants {
         NoMoreMessages: 10,
         ExportContact: 11,
         BatteryVoltage: 12,
+        DeviceInfo: 13,
     }
 
     static PushCodes = {

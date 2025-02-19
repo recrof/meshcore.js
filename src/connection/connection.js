@@ -185,6 +185,13 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandDeviceQuery(appTargetVer) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.DeviceQuery);
+        data.writeByte(appTargetVer); // e.g: 1
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -219,6 +226,8 @@ class Connection extends EventEmitter {
             this.onExportContactResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.BatteryVoltage){
             this.onBatteryVoltageResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.DeviceInfo){
+            this.onDeviceInfoResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.PathUpdated){
@@ -314,6 +323,15 @@ class Connection extends EventEmitter {
     onBatteryVoltageResponse(bufferReader) {
         this.emit(Constants.ResponseCodes.BatteryVoltage, {
             batteryMilliVolts: bufferReader.readUInt16LE(),
+        });
+    }
+
+    onDeviceInfoResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.DeviceInfo, {
+            firmwareVer: bufferReader.readInt8(),
+            reserved: bufferReader.readBytes(6), // reserved
+            firmware_build_date: bufferReader.readCString(12), // eg. "19 Feb 2025"
+            manufacturerModel: bufferReader.readString(), // remainder of frame
         });
     }
 
@@ -1011,6 +1029,37 @@ class Connection extends EventEmitter {
 
                 // get battery voltage
                 await this.sendCommandGetBatteryVoltage();
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    deviceQuery(appTargetVer) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive device info
+                const onDeviceInfo = (response) => {
+                    this.off(Constants.ResponseCodes.DeviceInfo, onDeviceInfo);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve(response);
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.DeviceInfo, onDeviceInfo);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.DeviceInfo, onDeviceInfo);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // query device
+                await this.sendCommandDeviceQuery(appTargetVer);
 
             } catch(e) {
                 reject(e);

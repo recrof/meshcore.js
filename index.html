@@ -104,6 +104,12 @@
                 <button @click="getBatteryVoltage" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     GetBatteryVoltage
                 </button>
+                <button @click="exportPrivateKey" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    ExportPrivateKey
+                </button>
+                <button @click="importPrivateKey" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    ImportPrivateKey
+                </button>
             </div>
         </div>
 
@@ -387,6 +393,31 @@
                 await this.connection.setContactPath(contact, [
                     0xd2,
                 ]);
+            },
+            async exportPrivateKey() {
+                try {
+                    const response = await this.connection.exportPrivateKey();
+                    console.log(response);
+                    console.log(this.bytesToHex(response.privateKey));
+                } catch(e) {
+                    alert(`Failed to export private key: ${e}`);
+                }
+            },
+            async importPrivateKey() {
+
+                const privateKeyHex = prompt("Enter private key encoded in hex");
+                if(!privateKeyHex){
+                    return;
+                }
+
+                try {
+                    const privateKey = this.hexToBytes(privateKeyHex);
+                    await this.connection.importPrivateKey(privateKey);
+                    alert("Private key imported!")
+                } catch(e) {
+                    alert(`Failed to export private key: ${e}`);
+                }
+
             },
             async reboot() {
                 try {

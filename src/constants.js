@@ -34,6 +34,8 @@ class Constants {
         GetBatteryVoltage: 20,
         SetTuningParams: 21, // todo
         DeviceQuery: 22,
+        ExportPrivateKey: 23,
+        ImportPrivateKey: 24,
     }
 
     static ResponseCodes = {
@@ -51,6 +53,8 @@ class Constants {
         ExportContact: 11,
         BatteryVoltage: 12,
         DeviceInfo: 13,
+        PrivateKey: 14,
+        Disabled: 15,
     }
 
     static PushCodes = {

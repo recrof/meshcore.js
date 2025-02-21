@@ -192,6 +192,19 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandExportPrivateKey() {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.ExportPrivateKey);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
+    async sendCommandImportPrivateKey(privateKey) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.ImportPrivateKey);
+        data.writeBytes(privateKey);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -228,6 +241,10 @@ class Connection extends EventEmitter {
             this.onBatteryVoltageResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.DeviceInfo){
             this.onDeviceInfoResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.PrivateKey){
+            this.onPrivateKeyResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.Disabled){
+            this.onDisabledResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.PathUpdated){
@@ -332,6 +349,18 @@ class Connection extends EventEmitter {
             reserved: bufferReader.readBytes(6), // reserved
             firmware_build_date: bufferReader.readCString(12), // eg. "19 Feb 2025"
             manufacturerModel: bufferReader.readString(), // remainder of frame
+        });
+    }
+
+    onPrivateKeyResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.PrivateKey, {
+            privateKey: bufferReader.readBytes(64),
+        });
+    }
+
+    onDisabledResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.Disabled, {
+
         });
     }
 
@@ -1060,6 +1089,90 @@ class Connection extends EventEmitter {
 
                 // query device
                 await this.sendCommandDeviceQuery(appTargetVer);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    exportPrivateKey() {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive private Key
+                const onPrivateKey = (response) => {
+                    this.off(Constants.ResponseCodes.PrivateKey, onPrivateKey);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Disabled, onDisabled);
+                    resolve(response);
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.PrivateKey, onPrivateKey);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Disabled, onDisabled);
+                    reject();
+                }
+
+                // reject promise when we receive disabled
+                const onDisabled = () => {
+                    this.off(Constants.ResponseCodes.PrivateKey, onPrivateKey);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Disabled, onDisabled);
+                    reject("disabled");
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.PrivateKey, onPrivateKey);
+                this.once(Constants.ResponseCodes.Err, onErr);
+                this.once(Constants.ResponseCodes.Disabled, onDisabled);
+
+                // export private key
+                await this.sendCommandExportPrivateKey();
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    importPrivateKey(privateKey) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = (response) => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Disabled, onDisabled);
+                    resolve(response);
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Disabled, onDisabled);
+                    reject();
+                }
+
+                // reject promise when we receive disabled
+                const onDisabled = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Disabled, onDisabled);
+                    reject("disabled");
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+                this.once(Constants.ResponseCodes.Disabled, onDisabled);
+
+                // import private key
+                await this.sendCommandImportPrivateKey(privateKey);
 
             } catch(e) {
                 reject(e);

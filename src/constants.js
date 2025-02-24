@@ -36,6 +36,9 @@ class Constants {
         DeviceQuery: 22,
         ExportPrivateKey: 23,
         ImportPrivateKey: 24,
+        SendRawData: 25, // todo
+        SendLogin: 26, // todo
+        SendStatusReq: 27, // todo
     }
 
     static ResponseCodes = {
@@ -62,6 +65,9 @@ class Constants {
         PathUpdated: 0x81,
         SendConfirmed: 0x82,
         MsgWaiting: 0x83,
+        LoginSuccess: 0x85,
+        LoginFail: 0x86, // not usable yet
+        StatusResponse: 0x87,
     }
 
     static AdvType = {

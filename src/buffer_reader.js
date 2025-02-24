@@ -59,6 +59,12 @@ class BufferReader {
         return view.getUint32(0, true);
     }
 
+    readInt16LE() {
+        const bytes = this.readBytes(2);
+        const view = new DataView(bytes.buffer);
+        return view.getInt16(0, true);
+    }
+
     readInt32LE() {
         const bytes = this.readBytes(4);
         const view = new DataView(bytes.buffer);

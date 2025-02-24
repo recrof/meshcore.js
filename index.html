@@ -136,6 +136,7 @@
                     <div class="flex my-auto space-x-2">
                         <div @click="sendMessage(contact)" class="hover:underline cursor-pointer">Message</div>
                         <div @click="setPath(contact)" class="hover:underline cursor-pointer">Set Path</div>
+                        <div @click="statusRequest(contact)" class="hover:underline cursor-pointer">GetStats</div>
                         <div @click="shareContact(contact)" class="hover:underline cursor-pointer">Share (Zero Hop)</div>
                         <div @click="exportContact(contact)" class="hover:underline cursor-pointer">Export</div>
                         <div @click="resetPath(contact)" class="hover:underline cursor-pointer">Reset Path</div>
@@ -434,6 +435,32 @@
                 } catch(e) {
                     alert("Failed to get battery voltage!");
                 }
+            },
+            async statusRequest(contact) {
+
+                // ask user for password
+                const password = prompt("Please enter Admin, or Guest password");
+                if(!password){
+                    return;
+                }
+
+                try {
+
+                    // log in to repeater
+                    const response = await this.connection.login(contact.publicKey, password);
+                    console.log("login response", response);
+
+                    // request status
+                    const statusResponse = await this.connection.getStatus(contact.publicKey);
+                    console.log("status response", statusResponse);
+
+                    // show status response
+                    alert(`status request success:\n${JSON.stringify(statusResponse, null, 4)}`);
+
+                } catch(e) {
+                    alert(`Failed to login: ${e}`);
+                }
+
             },
             bytesToHex(uint8Array) {
                 return Array.from(uint8Array).map(byte => byte.toString(16).padStart(2, '0')).join('');

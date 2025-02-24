@@ -2,6 +2,7 @@ import BufferWriter from "../buffer_writer.js";
 import BufferReader from "../buffer_reader.js";
 import Constants from "../constants.js";
 import EventEmitter from "../events.js";
+import BufferUtils from "../buffer_utils.js";
 
 class Connection extends EventEmitter {
 
@@ -205,6 +206,21 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSendLogin(publicKey, password) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendLogin);
+        data.writeBytes(publicKey); // 32 bytes - id of repeater or room server
+        data.writeString(password); // password is remainder of frame, max 15 characters
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
+    async sendCommandSendStatusReq(publicKey) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendStatusReq);
+        data.writeBytes(publicKey); // 32 bytes - id of repeater or room server
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -253,6 +269,10 @@ class Connection extends EventEmitter {
             this.onSendConfirmedPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.MsgWaiting){
             this.onMsgWaitingPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.LoginSuccess){
+            this.onLoginSuccessPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.StatusResponse){
+            this.onStatusResponsePush(bufferReader);
         } else {
             console.log("unhandled frame", frame);
         }
@@ -281,6 +301,21 @@ class Connection extends EventEmitter {
     onMsgWaitingPush(bufferReader) {
         this.emit(Constants.PushCodes.MsgWaiting, {
 
+        });
+    }
+
+    onLoginSuccessPush(bufferReader) {
+        this.emit(Constants.PushCodes.LoginSuccess, {
+            reserved: bufferReader.readByte(), // reserved
+            pubKeyPrefix: bufferReader.readBytes(6), // 6 bytes of public key this login success is from
+        });
+    }
+
+    onStatusResponsePush(bufferReader) {
+        this.emit(Constants.PushCodes.StatusResponse, {
+            reserved: bufferReader.readByte(), // reserved
+            pubKeyPrefix: bufferReader.readBytes(6), // 6 bytes of public key this status response is from
+            statusData: bufferReader.readRemainingBytes(),
         });
     }
 
@@ -1173,6 +1208,148 @@ class Connection extends EventEmitter {
 
                 // import private key
                 await this.sendCommandImportPrivateKey(privateKey);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    login(contactPublicKey, password, extraTimeoutMillis = 1000) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // get public key prefix we expect in the login response
+                const publicKeyPrefix = contactPublicKey.subarray(0, 6);
+
+                // listen for sent response so we can get estimated timeout
+                const onSent = (response) => {
+
+                    // remove error listener since we received sent response
+                    this.once(Constants.ResponseCodes.Err, onErr);
+
+                    // reject login request as timed out after estimated delay, plus a bit extra
+                    const estTimeout = response.estTimeout + extraTimeoutMillis;
+                    setTimeout(() => {
+                        reject("timeout");
+                    }, estTimeout);
+
+                }
+
+                // resolve promise when we receive login success push code
+                const onLoginSuccess = (response) => {
+
+                    // make sure login success response is for this login request
+                    if(!BufferUtils.areBuffersEqual(publicKeyPrefix, response.pubKeyPrefix)){
+                        console.log("onLoginSuccess is not for this login request, ignoring...");
+                        return;
+                    }
+
+                    // login successful
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.LoginSuccess, onLoginSuccess);
+                    resolve(response);
+
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.LoginSuccess, onLoginSuccess);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Err, onErr);
+                this.once(Constants.ResponseCodes.Sent, onSent);
+                this.once(Constants.PushCodes.LoginSuccess, onLoginSuccess);
+
+                // login
+                await this.sendCommandSendLogin(contactPublicKey, password);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    getStatus(contactPublicKey, extraTimeoutMillis = 1000) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // get public key prefix we expect in the status response
+                const publicKeyPrefix = contactPublicKey.subarray(0, 6);
+
+                // listen for sent response so we can get estimated timeout
+                const onSent = (response) => {
+
+                    // remove error listener since we received sent response
+                    this.once(Constants.ResponseCodes.Err, onErr);
+
+                    // reject login request as timed out after estimated delay, plus a bit extra
+                    const estTimeout = response.estTimeout + extraTimeoutMillis;
+                    setTimeout(() => {
+                        reject("timeout");
+                    }, estTimeout);
+
+                }
+
+                // resolve promise when we receive status response push code
+                const onStatusResponsePush = (response) => {
+
+                    // make sure login success response is for this login request
+                    if(!BufferUtils.areBuffersEqual(publicKeyPrefix, response.pubKeyPrefix)){
+                        console.log("onStatusResponsePush is not for this status request, ignoring...");
+                        return;
+                    }
+
+                    // status request successful
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.StatusResponse, onStatusResponsePush);
+
+                    // parse repeater stats from status data
+                    const bufferReader = new BufferReader(response.statusData);
+                    const repeaterStats = {
+                        batt_milli_volts: bufferReader.readUInt16LE(), // uint16_t batt_milli_volts;
+                        curr_tx_queue_len: bufferReader.readUInt16LE(), // uint16_t curr_tx_queue_len;
+                        curr_free_queue_len: bufferReader.readUInt16LE(), // uint16_t curr_free_queue_len;
+                        last_rssi: bufferReader.readInt16LE(), // int16_t  last_rssi;
+                        n_packets_recv: bufferReader.readUInt32LE(), // uint32_t n_packets_recv;
+                        n_packets_sent: bufferReader.readUInt32LE(), // uint32_t n_packets_sent;
+                        total_air_time_secs: bufferReader.readUInt32LE(), // uint32_t total_air_time_secs;
+                        total_up_time_secs: bufferReader.readUInt32LE(), // uint32_t total_up_time_secs;
+                        n_sent_flood: bufferReader.readUInt32LE(), // uint32_t n_sent_flood
+                        n_sent_direct: bufferReader.readUInt32LE(), // uint32_t n_sent_direct
+                        n_recv_flood: bufferReader.readUInt32LE(), // uint32_t n_recv_flood
+                        n_recv_direct: bufferReader.readUInt32LE(), // uint32_t n_recv_direct
+                        n_full_events: bufferReader.readUInt16LE(), // uint16_t n_full_events
+                        reserved1: bufferReader.readUInt16LE(), // uint16_t reserved1
+                        n_direct_dups: bufferReader.readUInt16LE(), // uint16_t n_direct_dups
+                        n_flood_dups: bufferReader.readUInt16LE(), // uint16_t n_flood_dups
+                    }
+
+                    resolve(repeaterStats);
+
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.StatusResponse, onStatusResponsePush);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Err, onErr);
+                this.once(Constants.ResponseCodes.Sent, onSent);
+                this.once(Constants.PushCodes.StatusResponse, onStatusResponsePush);
+
+                // request status
+                await this.sendCommandSendStatusReq(contactPublicKey);
 
             } catch(e) {
                 reject(e);

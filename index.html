@@ -114,8 +114,8 @@
         </div>
 
         <!-- contacts -->
-        <div class="flex space-x-2">
-            <div class="border bg-gray-50 rounded shadow w-full">
+        <div class="flex">
+            <div class="border bg-gray-50 rounded shadow w-full" :class="[ cliContact != null ? 'hidden md:block' : '' ]">
                 <div class="flex border-b p-2">
                     <div class="font-semibold my-auto mr-auto">Contacts</div>
                     <div class="my-auto">
@@ -147,7 +147,7 @@
                     </div>
                 </div>
             </div>
-            <div v-if="cliContact" class="w-full">
+            <div v-if="cliContact" class="w-full md:ml-2">
                 <div class="border bg-gray-50 rounded shadow">
                     <div class="flex border-b p-2">
                         <div class="font-semibold my-auto mr-auto">{{ cliContact.advName }}</div>

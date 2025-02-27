@@ -654,7 +654,7 @@ class Connection extends EventEmitter {
         });
     }
 
-    sendTextMessage(contactPublicKey, text) {
+    sendTextMessage(contactPublicKey, text, type) {
         return new Promise(async (resolve, reject) => {
             try {
 
@@ -677,7 +677,7 @@ class Connection extends EventEmitter {
                 this.once(Constants.ResponseCodes.Err, onErr);
 
                 // compose message
-                const txtType = Constants.TxtTypes.Plain;
+                const txtType = type ?? Constants.TxtTypes.Plain;
                 const attempt = 0;
                 const senderTimestamp = Math.floor(Date.now() / 1000);
 

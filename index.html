@@ -114,33 +114,56 @@
         </div>
 
         <!-- contacts -->
-        <div class="border bg-gray-50 rounded shadow">
-            <div class="flex border-b p-2">
-                <div class="font-semibold my-auto mr-auto">Contacts</div>
-                <div class="my-auto">
-                    <div @click="loadContacts" class="hover:underline cursor-pointer">Reload</div>
+        <div class="flex space-x-2">
+            <div class="border bg-gray-50 rounded shadow w-full">
+                <div class="flex border-b p-2">
+                    <div class="font-semibold my-auto mr-auto">Contacts</div>
+                    <div class="my-auto">
+                        <div @click="loadContacts" class="hover:underline cursor-pointer">Reload</div>
+                    </div>
                 </div>
-            </div>
-            <div class="divide-y">
-                <div v-for="contact of contacts" class="px-2 py-1">
-                    <div class="my-auto mr-auto">
-                        <div class="font-semibold">{{ contact.advName }}</div>
-                        <div class="text-sm text-gray-500"><{{ bytesToHex(contact.publicKey) }}></div>
-                        <div class="text-sm text-gray-500">Type: {{ contactTypeToString(contact.type) }} • Last Advert: {{ contact.lastAdvert }}</div>
-                        <div class="text-sm text-gray-500">
-                            <span v-if="contact.outPathLen === -1">Path: ??? (Flood)</span>
-                            <span v-else-if="contact.outPathLen === 0">Path: Direct</span>
-                            <span v-else>Path: {{ contact.outPathLen }} hops [{{ formatOutPath(contact) }}]</span>
+                <div class="divide-y">
+                    <div v-for="contact of contacts" class="px-2 py-1">
+                        <div class="my-auto mr-auto">
+                            <div class="font-semibold">{{ contact.advName }}</div>
+                            <div class="text-sm text-gray-500"><{{ bytesToHex(contact.publicKey) }}></div>
+                            <div class="text-sm text-gray-500">Type: {{ contactTypeToString(contact.type) }} • Last Advert: {{ contact.lastAdvert }}</div>
+                            <div class="text-sm text-gray-500">
+                                <span v-if="contact.outPathLen === -1">Path: ??? (Flood)</span>
+                                <span v-else-if="contact.outPathLen === 0">Path: Direct</span>
+                                <span v-else>Path: {{ contact.outPathLen }} hops [{{ formatOutPath(contact) }}]</span>
+                            </div>
+                        </div>
+                        <div class="flex my-auto space-x-2">
+                            <div @click="sendMessage(contact)" class="hover:underline cursor-pointer">Message</div>
+                            <div @click="showCommandLine(contact)" class="hover:underline cursor-pointer">CLI</div>
+                            <div @click="setPath(contact)" class="hover:underline cursor-pointer">Set Path</div>
+                            <div @click="statusRequest(contact)" class="hover:underline cursor-pointer">GetStats</div>
+                            <div @click="shareContact(contact)" class="hover:underline cursor-pointer">Share (Zero Hop)</div>
+                            <div @click="exportContact(contact)" class="hover:underline cursor-pointer">Export</div>
+                            <div @click="resetPath(contact)" class="hover:underline cursor-pointer">Reset Path</div>
+                            <div @click="removeContact(contact)" class="hover:underline cursor-pointer">Forget</div>
                         </div>
                     </div>
-                    <div class="flex my-auto space-x-2">
-                        <div @click="sendMessage(contact)" class="hover:underline cursor-pointer">Message</div>
-                        <div @click="setPath(contact)" class="hover:underline cursor-pointer">Set Path</div>
-                        <div @click="statusRequest(contact)" class="hover:underline cursor-pointer">GetStats</div>
-                        <div @click="shareContact(contact)" class="hover:underline cursor-pointer">Share (Zero Hop)</div>
-                        <div @click="exportContact(contact)" class="hover:underline cursor-pointer">Export</div>
-                        <div @click="resetPath(contact)" class="hover:underline cursor-pointer">Reset Path</div>
-                        <div @click="removeContact(contact)" class="hover:underline cursor-pointer">Forget</div>
+                </div>
+            </div>
+            <div v-if="cliContact" class="w-full">
+                <div class="border bg-gray-50 rounded shadow">
+                    <div class="flex border-b p-2">
+                        <div class="font-semibold my-auto mr-auto">{{ cliContact.advName }}</div>
+                        <div class="my-auto">
+                            <div @click="cliContact = null" class="hover:underline cursor-pointer">Close</div>
+                        </div>
+                    </div>
+                    <div class="flex border-b">
+                        <input v-model="cliCommand" @keyup.enter.native="sendCliCommand" type="text" placeholder="Enter command..." class="p-2 w-full"/>
+                        <button @click="sendCliCommand" type="button" class="px-2">SEND</button>
+                    </div>
+                    <div v-if="cliMessages.length > 0" class="p-2">
+                        <div v-for="cliMessage of cliMessages">
+                            <span v-if="cliMessage.is_outgoing">&gt; <span class="font-semibold">{{ cliMessage.text }}</span></span>
+                            <span v-if="cliMessage.is_incoming">{{ cliMessage.text }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,12 +177,16 @@
     import Constants from "./src/constants.js";
     import SerialConnection from "./src/connection/serial_connection.js";
     import BleConnection from "./src/connection/ble_connection.js";
+    import BufferUtils from "./src/buffer_utils.js";
     Vue.createApp({
         data() {
             return {
                 connection: null,
                 selfInfo: null,
                 contacts: [],
+                cliCommand: null,
+                cliContact: null,
+                cliMessages: [],
             };
         },
         mounted() {
@@ -326,8 +353,28 @@
                 await this.connection.addOrUpdateContact(publicKey, type, flags, outPathLen, outPath, advName, lastAdvert, advLat, advLon);
             },
             async syncNextMessage() {
+
+                // get next message
                 const message = await this.connection.syncNextMessage();
                 console.log("syncNextMessage", message);
+
+                // check if contact message
+                if(message.contactMessage){
+
+                    // check if from cli contact
+                    if(BufferUtils.areBuffersEqual(message.contactMessage.pubKeyPrefix, this.cliContact.publicKey.subarray(0, 6))){
+
+                        // add remote response
+                        this.cliMessages.push({
+                            is_incoming: true,
+                            text: message.contactMessage.text,
+                        });
+
+                        console.log("yes");
+                    }
+
+                }
+
             },
             async sendMessage(contact) {
 
@@ -339,6 +386,33 @@
 
                 // send message
                 const response = await this.connection.sendTextMessage(contact.publicKey, message);
+                console.log(response);
+
+            },
+            async sendCliCommand() {
+
+                // do nothing if no contact selected
+                if(!this.cliContact){
+                    return;
+                }
+
+                // make sure user provided command
+                const command = this.cliCommand;
+                if(!command){
+                    return;
+                }
+
+                // add local command
+                this.cliMessages.push({
+                    is_outgoing: true,
+                    text: command,
+                });
+
+                // clear input
+                this.cliCommand = null;
+
+                // send command
+                const response = await this.connection.sendTextMessage(this.cliContact.publicKey, command, Constants.TxtTypes.CliData);
                 console.log(response);
 
             },
@@ -460,6 +534,19 @@
                 } catch(e) {
                     alert(`Failed to login: ${e}`);
                 }
+
+            },
+            showCommandLine(contact) {
+
+                // hide cli if clicked same contact
+                if(this.cliContact === contact){
+                    this.cliContact = null;
+                    return;
+                }
+
+                // update ui
+                this.cliContact = contact;
+                this.cliMessages = [];
 
             },
             bytesToHex(uint8Array) {

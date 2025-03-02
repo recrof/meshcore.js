@@ -29,11 +29,11 @@ class Advert {
         const packet = Packet.fromBytes(bytes);
 
         // read packet payload
-        const bufferedReader = new BufferReader(packet.payload);
-        const publicKey = bufferedReader.readBytes(32);
-        const timestamp = bufferedReader.readBytes(4); // read as bytes for signature
-        const signature = bufferedReader.readBytes(64);
-        const appData = bufferedReader.readRemainingBytes();
+        const bufferReader = new BufferReader(packet.payload);
+        const publicKey = bufferReader.readBytes(32);
+        const timestamp = bufferReader.readBytes(4); // read as bytes for signature
+        const signature = bufferReader.readBytes(64);
+        const appData = bufferReader.readRemainingBytes();
 
         return new Advert(publicKey, timestamp, signature, appData);
 

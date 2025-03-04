@@ -780,6 +780,27 @@ class Connection extends EventEmitter {
         });
     }
 
+    async getWaitingMessages() {
+
+        const waitingMessages = [];
+
+        while(true){
+
+            // get next message, otherwise stop if nothing is returned
+            const message = await this.syncNextMessage();
+            if(!message){
+                break;
+            }
+
+            // add to waiting messages list
+            waitingMessages.push(message);
+
+        }
+
+        return waitingMessages;
+
+    }
+
     getDeviceTime() {
         return new Promise(async (resolve, reject) => {
             try {

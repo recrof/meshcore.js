@@ -42,8 +42,28 @@ async function onContactMessageReceived(message) {
         return;
     }
 
-    // send it back
-    await connection.sendTextMessage(contact.publicKey, message.text, Constants.TxtTypes.Plain);
+    // handle commands
+    if(message.text === "/ping"){
+        await connection.sendTextMessage(contact.publicKey, "PONG! 🏓", Constants.TxtTypes.Plain);
+        return;
+    }
+
+    // handle commands
+    if(message.text === "/date"){
+        await connection.sendTextMessage(contact.publicKey, (new Date()).toISOString(), Constants.TxtTypes.Plain);
+        return;
+    }
+
+    // help menu
+    const response = [
+        "🤖 Echo Bot Help",
+        "/help - show help menu",
+        "/ping - replies with pong",
+        "/date - replies with current date",
+    ].join("\n");
+
+    // fallback to send the help menu
+    await connection.sendTextMessage(contact.publicKey, response, Constants.TxtTypes.Plain);
 
 }
 

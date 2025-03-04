@@ -1360,7 +1360,7 @@ class Connection extends EventEmitter {
                         n_recv_flood: bufferReader.readUInt32LE(), // uint32_t n_recv_flood
                         n_recv_direct: bufferReader.readUInt32LE(), // uint32_t n_recv_direct
                         n_full_events: bufferReader.readUInt16LE(), // uint16_t n_full_events
-                        reserved1: bufferReader.readUInt16LE(), // uint16_t reserved1
+                        last_snr: bufferReader.readInt16LE(), // int16_t last_snr
                         n_direct_dups: bufferReader.readUInt16LE(), // uint16_t n_direct_dups
                         n_flood_dups: bufferReader.readUInt16LE(), // uint16_t n_flood_dups
                     }

@@ -654,6 +654,19 @@ class Connection extends EventEmitter {
         });
     }
 
+    async findContactByPublicKeyPrefix(pubKeyPrefix) {
+
+        // get contacts
+        const contacts = await this.getContacts();
+
+        // find first contact matching pub key prefix
+        return contacts.find((contact) => {
+            const contactPubKeyPrefix = contact.publicKey.subarray(0, pubKeyPrefix.length);
+            return BufferUtils.areBuffersEqual(pubKeyPrefix, contactPubKeyPrefix);
+        });
+
+    }
+
     sendTextMessage(contactPublicKey, text, type) {
         return new Promise(async (resolve, reject) => {
             try {

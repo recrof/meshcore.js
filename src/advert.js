@@ -1,15 +1,51 @@
 import {ed25519} from "@noble/curves/ed25519";
 import BufferReader from "./buffer_reader.js";
 import BufferWriter from "./buffer_writer.js";
-import Packet from "./packet.js";
 
 class Advert {
+
+    static ADV_TYPE_NONE = 0;
+    static ADV_TYPE_CHAT = 1;
+    static ADV_TYPE_REPEATER = 2;
+    static ADV_TYPE_ROOM = 3;
+
+    static ADV_LATLON_MASK = 0x10;
+    static ADV_BATTERY_MASK = 0x20;
+    static ADV_TEMPERATURE_MASK = 0x40;
+    static ADV_NAME_MASK = 0x80;
 
     constructor(publicKey, timestamp, signature, appData) {
         this.publicKey = publicKey;
         this.timestamp = timestamp;
         this.signature = signature;
         this.appData = appData;
+        this.parsed = this.parseAppData();
+    }
+
+    static fromBytes(bytes) {
+
+        // read bytes
+        const bufferReader = new BufferReader(bytes);
+        const publicKey = bufferReader.readBytes(32);
+        const timestamp = bufferReader.readUInt32LE();
+        const signature = bufferReader.readBytes(64);
+        const appData = bufferReader.readRemainingBytes();
+
+        return new Advert(publicKey, timestamp, signature, appData);
+
+    }
+
+    getFlags() {
+        return this.appData[0];
+    }
+
+    getTypeString() {
+        const flags = this.getFlags();
+        if(flags & Advert.ADV_TYPE_NONE) return "ADV_TYPE_NONE";
+        if(flags & Advert.ADV_TYPE_CHAT) return "ADV_TYPE_CHAT";
+        if(flags & Advert.ADV_TYPE_REPEATER) return "ADV_TYPE_REPEATER";
+        if(flags & Advert.ADV_TYPE_ROOM) return "ADV_TYPE_ROOM";
+        return null;
     }
 
     isVerified() {
@@ -25,19 +61,32 @@ class Advert {
 
     }
 
-    static fromPacketBytes(bytes) {
+    parseAppData() {
 
-        // parse packet from bytes
-        const packet = Packet.fromBytes(bytes);
+        // read app data
+        const bufferReader = new BufferReader(this.appData);
+        const flags = bufferReader.readByte();
 
-        // read packet payload
-        const bufferReader = new BufferReader(packet.payload);
-        const publicKey = bufferReader.readBytes(32);
-        const timestamp = bufferReader.readUInt32LE();
-        const signature = bufferReader.readBytes(64);
-        const appData = bufferReader.readRemainingBytes();
+        // parse lat lon
+        var lat = null;
+        var lon = null;
+        if(flags & Advert.ADV_LATLON_MASK){
+            lat = bufferReader.readInt32LE();
+            lon = bufferReader.readInt32LE();
+        }
 
-        return new Advert(publicKey, timestamp, signature, appData);
+        // parse name (remainder of app data)
+        var name = null;
+        if(flags & Advert.ADV_NAME_MASK){
+            name = bufferReader.readString();
+        }
+
+        return {
+            type: this.getTypeString(),
+            lat: lat,
+            lon: lon,
+            name: name,
+        };
 
     }
 

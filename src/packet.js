@@ -1,4 +1,5 @@
 import BufferReader from "./buffer_reader.js";
+import Advert from "./advert.js";
 
 class Packet {
 
@@ -101,6 +102,48 @@ class Packet {
 
     isMarkedDoNotRetransmit() {
         return this.header === 0xFF;
+    }
+
+    parsePayload() {
+        switch(this.getPayloadType()){
+            case Packet.PAYLOAD_TYPE_REQ: return this.parsePayloadTypeReq();
+            case Packet.PAYLOAD_TYPE_ACK: return this.parsePayloadTypeAck();
+            case Packet.PAYLOAD_TYPE_ADVERT: return this.parsePayloadTypeAdvert();
+            default: return null;
+        }
+    }
+
+    parsePayloadTypeReq() {
+
+        // parse bytes
+        const bufferReader = new BufferReader(this.payload);
+        const dest = bufferReader.readByte();
+        const src = bufferReader.readByte();
+        const encrypted = bufferReader.readRemainingBytes();
+
+        // convert to hex
+        const destHex = dest.toString(16);
+        const srcHex = src.toString(16);
+        const encryptedHex = Buffer.from(encrypted).toString("hex");
+
+        return {
+            src: srcHex,
+            dest: destHex,
+            encrypted: encryptedHex,
+        };
+
+    }
+
+    parsePayloadTypeAck() {
+        return {
+            ack_code: Buffer.from(this.payload).toString("hex"),
+        };
+    }
+
+    parsePayloadTypeAdvert() {
+        return {
+            advert: Advert.fromBytes(this.payload),
+        };
     }
 
 }

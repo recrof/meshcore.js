@@ -200,15 +200,15 @@
                 this.connection = await SerialConnection.open();
                 this.connection.on("connected", () => this.onConnected());
                 this.connection.on("disconnected", () => this.onDisconnected());
-                this.connection.on("tx", (data) => console.log("tx", data));
-                this.connection.on("rx", (data) => console.log("rx", data));
+                // this.connection.on("tx", (data) => console.log("tx", data));
+                // this.connection.on("rx", (data) => console.log("rx", data));
             },
             async askForBleDevice() {
                 this.connection = await BleConnection.open();
                 this.connection.on("connected", () => this.onConnected());
                 this.connection.on("disconnected", () => this.onDisconnected());
-                this.connection.on("tx", (data) => console.log("tx", data));
-                this.connection.on("rx", (data) => console.log("rx", data));
+                // this.connection.on("tx", (data) => console.log("tx", data));
+                // this.connection.on("rx", (data) => console.log("rx", data));
             },
             async disconnect() {
                 if(this.connection){
@@ -250,10 +250,10 @@
                     console.log("ExportContact", event);
                 });
 
-                this.connection.on(Constants.PushCodes.LogRxData, async (event) => {
-                    console.log("LogRxData", event)
-                    console.log(this.bytesToHex(event.raw));
-                });
+                // this.connection.on(Constants.PushCodes.LogRxData, async (event) => {
+                //     console.log("LogRxData", event)
+                //     console.log(this.bytesToHex(event.raw));
+                // });
 
             },
             onDisconnected() {

@@ -24,7 +24,7 @@ class Packet {
     static PAYLOAD_TYPE_GRP_DATA = 0x06;    // an (unverified) group datagram (prefixed with channel hash, MAC) (enc data: timestamp, blob)
     static PAYLOAD_TYPE_ANON_REQ = 0x07;    // generic request (prefixed with dest_hash, ephemeral pub_key, MAC) (enc data: ...)
     static PAYLOAD_TYPE_PATH = 0x08;    // returned path (prefixed with dest/src hashes, MAC) (enc data: path, extra)
-    static PAYLOAD_TYPE_RESERVEDM = 0x0F;    // FUTURE
+    static PAYLOAD_TYPE_RAW_CUSTOM = 0x0F;    // custom packet as raw bytes, for applications with custom encryption, payloads, etc
 
     constructor(header, path, payload) {
 
@@ -58,8 +58,8 @@ class Packet {
 
     getRouteTypeString() {
         switch(this.getRouteType()){
-            case Packet.ROUTE_TYPE_FLOOD: return "ROUTE_TYPE_FLOOD";
-            case Packet.ROUTE_TYPE_DIRECT: return "ROUTE_TYPE_DIRECT";
+            case Packet.ROUTE_TYPE_FLOOD: return "FLOOD";
+            case Packet.ROUTE_TYPE_DIRECT: return "DIRECT";
             default: return null;
         }
     }
@@ -78,16 +78,16 @@ class Packet {
 
     getPayloadTypeString() {
         switch(this.getPayloadType()){
-            case Packet.PAYLOAD_TYPE_REQ: return "PAYLOAD_TYPE_REQ";
-            case Packet.PAYLOAD_TYPE_RESPONSE: return "PAYLOAD_TYPE_RESPONSE";
-            case Packet.PAYLOAD_TYPE_TXT_MSG: return "PAYLOAD_TYPE_TXT_MSG";
-            case Packet.PAYLOAD_TYPE_ACK: return "PAYLOAD_TYPE_ACK";
-            case Packet.PAYLOAD_TYPE_ADVERT: return "PAYLOAD_TYPE_ADVERT";
-            case Packet.PAYLOAD_TYPE_GRP_TXT: return "PAYLOAD_TYPE_GRP_TXT";
-            case Packet.PAYLOAD_TYPE_GRP_DATA: return "PAYLOAD_TYPE_GRP_DATA";
-            case Packet.PAYLOAD_TYPE_ANON_REQ: return "PAYLOAD_TYPE_ANON_REQ";
-            case Packet.PAYLOAD_TYPE_PATH: return "PAYLOAD_TYPE_PATH";
-            case Packet.PAYLOAD_TYPE_RESERVEDM: return "PAYLOAD_TYPE_RESERVEDM";
+            case Packet.PAYLOAD_TYPE_REQ: return "REQ";
+            case Packet.PAYLOAD_TYPE_RESPONSE: return "RESPONSE";
+            case Packet.PAYLOAD_TYPE_TXT_MSG: return "TXT_MSG";
+            case Packet.PAYLOAD_TYPE_ACK: return "ACK";
+            case Packet.PAYLOAD_TYPE_ADVERT: return "ADVERT";
+            case Packet.PAYLOAD_TYPE_GRP_TXT: return "GRP_TXT";
+            case Packet.PAYLOAD_TYPE_GRP_DATA: return "GRP_DATA";
+            case Packet.PAYLOAD_TYPE_ANON_REQ: return "ANON_REQ";
+            case Packet.PAYLOAD_TYPE_PATH: return "PATH";
+            case Packet.PAYLOAD_TYPE_RAW_CUSTOM: return "RAW_CUSTOM";
             default: return null;
         }
     }

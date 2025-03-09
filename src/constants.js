@@ -68,6 +68,7 @@ class Constants {
         LoginSuccess: 0x85,
         LoginFail: 0x86, // not usable yet
         StatusResponse: 0x87,
+        LogRxData: 0x88,
     }
 
     static AdvType = {

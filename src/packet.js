@@ -121,22 +121,17 @@ class Packet {
         const src = bufferReader.readByte();
         const encrypted = bufferReader.readRemainingBytes();
 
-        // convert to hex
-        const destHex = dest.toString(16);
-        const srcHex = src.toString(16);
-        const encryptedHex = Buffer.from(encrypted).toString("hex");
-
         return {
-            src: srcHex,
-            dest: destHex,
-            encrypted: encryptedHex,
+            src: src,
+            dest: dest,
+            encrypted: encrypted,
         };
 
     }
 
     parsePayloadTypeAck() {
         return {
-            ack_code: Buffer.from(this.payload).toString("hex"),
+            ack_code: this.payload,
         };
     }
 

@@ -249,6 +249,11 @@
                     console.log("ExportContact", event);
                 });
 
+                this.connection.on(Constants.PushCodes.LogRxData, async (event) => {
+                    console.log("LogRxData", event)
+                    console.log(this.bytesToHex(event.raw));
+                });
+
             },
             onDisconnected() {
                 console.log("disconnected");

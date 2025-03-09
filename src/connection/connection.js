@@ -273,6 +273,8 @@ class Connection extends EventEmitter {
             this.onLoginSuccessPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.StatusResponse){
             this.onStatusResponsePush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.LogRxData){
+            this.onLogRxDataPush(bufferReader);
         } else {
             console.log("unhandled frame", frame);
         }
@@ -316,6 +318,14 @@ class Connection extends EventEmitter {
             reserved: bufferReader.readByte(), // reserved
             pubKeyPrefix: bufferReader.readBytes(6), // 6 bytes of public key this status response is from
             statusData: bufferReader.readRemainingBytes(),
+        });
+    }
+
+    onLogRxDataPush(bufferReader) {
+        this.emit(Constants.PushCodes.LogRxData, {
+            lastSnr: bufferReader.readInt8() / 4,
+            lastRssi: bufferReader.readInt8(),
+            raw: bufferReader.readRemainingBytes(),
         });
     }
 

@@ -138,6 +138,7 @@
                             <div v-if="contact.type === 1" @click="sendMessage(contact)" class="hover:underline cursor-pointer">Message</div>
                             <div v-if="contact.type === 2" @click="showCommandLine(contact)" class="hover:underline cursor-pointer">CLI</div>
                             <div v-if="contact.type === 2" @click="statusRequest(contact)" class="hover:underline cursor-pointer">GetStats</div>
+                            <div v-if="contact.type === 2" @click="pingRepeater(contact)" class="hover:underline cursor-pointer">Ping</div>
                             <div @click="setPath(contact)" class="hover:underline cursor-pointer">Set Path</div>
                             <div @click="shareContact(contact)" class="hover:underline cursor-pointer">Share (Zero Hop)</div>
                             <div @click="exportContact(contact)" class="hover:underline cursor-pointer">Export</div>
@@ -500,6 +501,14 @@
                     alert(`Failed to export private key: ${e}`);
                 }
 
+            },
+            async pingRepeater(contact) {
+                try {
+                    const response = await this.connection.pingRepeaterZeroHop(contact.publicKey);
+                    console.log(response);
+                } catch(e) {
+                    console.log(e);
+                }
             },
             async reboot() {
                 try {

@@ -1,5 +1,4 @@
 import BufferReader from "./buffer_reader.js";
-import Advert from "./advert.js";
 
 class Packet {
 
@@ -108,7 +107,6 @@ class Packet {
         switch(this.getPayloadType()){
             case Packet.PAYLOAD_TYPE_REQ: return this.parsePayloadTypeReq();
             case Packet.PAYLOAD_TYPE_ACK: return this.parsePayloadTypeAck();
-            case Packet.PAYLOAD_TYPE_ADVERT: return this.parsePayloadTypeAdvert();
             default: return null;
         }
     }
@@ -132,12 +130,6 @@ class Packet {
     parsePayloadTypeAck() {
         return {
             ack_code: this.payload,
-        };
-    }
-
-    parsePayloadTypeAdvert() {
-        return {
-            advert: Advert.fromBytes(this.payload),
         };
     }
 

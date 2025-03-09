@@ -206,6 +206,15 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSendRawData(path, rawData) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendRawData);
+        data.writeByte(path.length);
+        data.writeBytes(path);
+        data.writeBytes(rawData);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandSendLogin(publicKey, password) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.SendLogin);
@@ -269,6 +278,8 @@ class Connection extends EventEmitter {
             this.onSendConfirmedPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.MsgWaiting){
             this.onMsgWaitingPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.RawData){
+            this.onRawDataPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.LoginSuccess){
             this.onLoginSuccessPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.StatusResponse){
@@ -303,6 +314,15 @@ class Connection extends EventEmitter {
     onMsgWaitingPush(bufferReader) {
         this.emit(Constants.PushCodes.MsgWaiting, {
 
+        });
+    }
+
+    onRawDataPush(bufferReader) {
+        this.emit(Constants.PushCodes.RawData, {
+            lastSnr: bufferReader.readInt8() / 4,
+            lastRssi: bufferReader.readInt8(),
+            reserved: bufferReader.readByte(),
+            payload: bufferReader.readRemainingBytes(),
         });
     }
 

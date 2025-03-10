@@ -105,10 +105,29 @@ class Packet {
 
     parsePayload() {
         switch(this.getPayloadType()){
+            case Packet.PAYLOAD_TYPE_PATH: return this.parsePayloadTypePath();
             case Packet.PAYLOAD_TYPE_REQ: return this.parsePayloadTypeReq();
+            case Packet.PAYLOAD_TYPE_RESPONSE: return this.parsePayloadTypeResponse();
+            case Packet.PAYLOAD_TYPE_TXT_MSG: return this.parsePayloadTypeTxtMsg();
             case Packet.PAYLOAD_TYPE_ACK: return this.parsePayloadTypeAck();
+            case Packet.PAYLOAD_TYPE_ANON_REQ: return this.parsePayloadTypeAnonReq();
             default: return null;
         }
+    }
+
+    parsePayloadTypePath() {
+
+        // parse bytes
+        const bufferReader = new BufferReader(this.payload);
+        const dest = bufferReader.readByte();
+        const src = bufferReader.readByte();
+        // todo other fields
+
+        return {
+            src: src,
+            dest: dest,
+        };
+
     }
 
     parsePayloadTypeReq() {
@@ -127,10 +146,55 @@ class Packet {
 
     }
 
+    parsePayloadTypeResponse() {
+
+        // parse bytes
+        const bufferReader = new BufferReader(this.payload);
+        const dest = bufferReader.readByte();
+        const src = bufferReader.readByte();
+        // todo other fields
+
+        return {
+            src: src,
+            dest: dest,
+        };
+
+    }
+
+    parsePayloadTypeTxtMsg() {
+
+        // parse bytes
+        const bufferReader = new BufferReader(this.payload);
+        const dest = bufferReader.readByte();
+        const src = bufferReader.readByte();
+        // todo other fields
+
+        return {
+            src: src,
+            dest: dest,
+        };
+
+    }
+
     parsePayloadTypeAck() {
         return {
             ack_code: this.payload,
         };
+    }
+
+    parsePayloadTypeAnonReq() {
+
+        // parse bytes
+        const bufferReader = new BufferReader(this.payload);
+        const dest = bufferReader.readByte();
+        const srcPublicKey = bufferReader.readBytes(32);
+        // todo other fields
+
+        return {
+            src: srcPublicKey,
+            dest: dest,
+        };
+
     }
 
 }

@@ -1,4 +1,3 @@
-import {ed25519} from "@noble/curves/ed25519";
 import BufferReader from "./buffer_reader.js";
 import BufferWriter from "./buffer_writer.js";
 
@@ -41,14 +40,16 @@ class Advert {
 
     getTypeString() {
         const flags = this.getFlags();
-        if(flags & Advert.ADV_TYPE_NONE) return "ADV_TYPE_NONE";
-        if(flags & Advert.ADV_TYPE_CHAT) return "ADV_TYPE_CHAT";
-        if(flags & Advert.ADV_TYPE_REPEATER) return "ADV_TYPE_REPEATER";
-        if(flags & Advert.ADV_TYPE_ROOM) return "ADV_TYPE_ROOM";
+        if(flags & Advert.ADV_TYPE_NONE) return "NONE";
+        if(flags & Advert.ADV_TYPE_CHAT) return "CHAT";
+        if(flags & Advert.ADV_TYPE_REPEATER) return "REPEATER";
+        if(flags & Advert.ADV_TYPE_ROOM) return "ROOM";
         return null;
     }
 
-    isVerified() {
+    async isVerified() {
+
+        const ed25519 = await import("@noble/curves/ed25519");
 
         // build signed data
         const bufferWriter = new BufferWriter();

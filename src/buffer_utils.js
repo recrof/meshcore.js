@@ -1,5 +1,11 @@
 class BufferUtils {
 
+    static bytesToHex(uint8Array) {
+        return Array.from(uint8Array).map(byte => {
+            return byte.toString(16).padStart(2, '0');
+        }).join('');
+    }
+
     static areBuffersEqual(byteArray1, byteArray2) {
 
         // ensure length is the same

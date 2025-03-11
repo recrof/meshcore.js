@@ -231,6 +231,13 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandGetChannel(channelIdx) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.GetChannel);
+        data.writeByte(channelIdx);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -271,6 +278,8 @@ class Connection extends EventEmitter {
             this.onPrivateKeyResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.Disabled){
             this.onDisabledResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.ChannelInfo){
+            this.onChannelInfoResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.PathUpdated){
@@ -428,6 +437,23 @@ class Connection extends EventEmitter {
         this.emit(Constants.ResponseCodes.Disabled, {
 
         });
+    }
+
+    onChannelInfoResponse(bufferReader) {
+
+        const idx = bufferReader.readUInt8();
+        const remainingBytesLength = bufferReader.getRemainingBytesCount();
+
+        // 128-bit keys
+        if(remainingBytesLength === 16){
+            this.emit(Constants.ResponseCodes.ChannelInfo, {
+                channelIdx: idx,
+                secret: bufferReader.readBytes(remainingBytesLength),
+            });
+        } else {
+            console.log(`ChannelInfo has unexpected key length: ${remainingBytesLength}`);
+        }
+
     }
 
     onSelfInfoResponse(bufferReader) {
@@ -1501,6 +1527,62 @@ class Connection extends EventEmitter {
             } catch(e) {
                 reject(e);
             }
+        });
+    }
+
+    getChannel(channelIdx) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive channel info response
+                const onChannelInfoResponse = (response) => {
+                    this.off(Constants.ResponseCodes.ChannelInfo, onChannelInfoResponse);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve(response);
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.ChannelInfo, onChannelInfoResponse);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.ChannelInfo, onChannelInfoResponse);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // get channel
+                await this.sendCommandGetChannel(channelIdx);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    getChannels() {
+        return new Promise(async (resolve, reject) => {
+
+            // add channels we receive to a list
+            var channelIdx = 0;
+            const channels = [];
+            while(true){
+
+                // try to get next channel
+                try {
+                    const channel = await this.getChannel(channelIdx);
+                    channels.push(channel);
+                } catch(e){
+                    break;
+                }
+
+                channelIdx++;
+
+            }
+
+            return resolve(channels);
+
         });
     }
 

@@ -5,6 +5,10 @@ class BufferReader {
         this.buffer = new Uint8Array(data);
     }
 
+    getRemainingBytesCount() {
+        return this.buffer.length - this.pointer;
+    }
+
     readByte() {
         return this.readBytes(1)[0];
     }
@@ -16,8 +20,7 @@ class BufferReader {
     }
 
     readRemainingBytes() {
-        const remainingBytesCount = this.buffer.length - this.pointer;
-        return this.readBytes(remainingBytesCount);
+        return this.readBytes(this.getRemainingBytesCount());
     }
 
     readString() {
@@ -45,6 +48,12 @@ class BufferReader {
         const bytes = this.readBytes(1);
         const view = new DataView(bytes.buffer);
         return view.getInt8(0);
+    }
+
+    readUInt8() {
+        const bytes = this.readBytes(1);
+        const view = new DataView(bytes.buffer);
+        return view.getUint8(0);
     }
 
     readUInt16LE() {

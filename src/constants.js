@@ -39,6 +39,8 @@ class Constants {
         SendRawData: 25,
         SendLogin: 26, // todo
         SendStatusReq: 27, // todo
+        GetChannel: 31,
+        SetChannel: 32,
     }
 
     static ResponseCodes = {
@@ -58,6 +60,7 @@ class Constants {
         DeviceInfo: 13,
         PrivateKey: 14,
         Disabled: 15,
+        ChannelInfo: 18,
     }
 
     static PushCodes = {

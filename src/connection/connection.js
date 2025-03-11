@@ -1610,7 +1610,7 @@ class Connection extends EventEmitter {
     getChannels() {
         return new Promise(async (resolve, reject) => {
 
-            // add channels we receive to a list
+            // get channels until we get an error
             var channelIdx = 0;
             const channels = [];
             while(true){

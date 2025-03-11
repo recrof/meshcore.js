@@ -24,9 +24,7 @@ class BufferReader {
     }
 
     readString() {
-        const remainingBytesCount = this.buffer.length - this.pointer;
-        const remainingBytes = this.readBytes(remainingBytesCount);
-        return new TextDecoder().decode(remainingBytes);
+        return new TextDecoder().decode(this.readRemainingBytes());
     }
 
     readCString(maxLength) {

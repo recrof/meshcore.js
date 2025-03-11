@@ -238,6 +238,15 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSetChannel(channelIdx, name, secret) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SetChannel);
+        data.writeByte(channelIdx);
+        data.writeCString(name, 32);
+        data.writeBytes(secret);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -442,12 +451,14 @@ class Connection extends EventEmitter {
     onChannelInfoResponse(bufferReader) {
 
         const idx = bufferReader.readUInt8();
+        const name = bufferReader.readCString(32);
         const remainingBytesLength = bufferReader.getRemainingBytesCount();
 
         // 128-bit keys
         if(remainingBytesLength === 16){
             this.emit(Constants.ResponseCodes.ChannelInfo, {
                 channelIdx: idx,
+                name: name,
                 secret: bufferReader.readBytes(remainingBytesLength),
             });
         } else {
@@ -1559,6 +1570,41 @@ class Connection extends EventEmitter {
                 reject(e);
             }
         });
+    }
+
+    setChannel(channelIdx, name, secret) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve();
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // set channel
+                await this.sendCommandSetChannel(channelIdx, name, secret);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    async deleteChannel(channelIdx) {
+        return await this.setChannel(channelIdx, "", new Uint8Array(16));
     }
 
     getChannels() {

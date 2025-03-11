@@ -113,6 +113,12 @@
                 <button @click="getChannels" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     GetChannels
                 </button>
+                <button @click="setChannel" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SetChannel
+                </button>
+                <button @click="deleteChannel" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    DeleteChannel
+                </button>
             </div>
         </div>
 
@@ -535,6 +541,20 @@
                     console.log(response);
                 } catch(e) {
                     alert("Failed to get channels!");
+                }
+            },
+            async setChannel() {
+                try {
+                    await this.connection.setChannel(1, "Test Channel", BufferUtils.base64ToBytes("RQKLcABJ8tLX+7yerzS9Rw=="));
+                } catch(e) {
+                    alert("Failed to set channel!");
+                }
+            },
+            async deleteChannel() {
+                try {
+                    await this.connection.deleteChannel(1);
+                } catch(e) {
+                    alert("Failed to delete channel!");
                 }
             },
             async login(contact) {

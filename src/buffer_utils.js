@@ -6,6 +6,12 @@ class BufferUtils {
         }).join('');
     }
 
+    static base64ToBytes(base64) {
+        return Uint8Array.from(atob(base64), (c) => {
+            return c.charCodeAt(0);
+        });
+    }
+
     static areBuffersEqual(byteArray1, byteArray2) {
 
         // ensure length is the same

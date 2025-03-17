@@ -4,6 +4,7 @@ import Constants from "../constants.js";
 import EventEmitter from "../events.js";
 import BufferUtils from "../buffer_utils.js";
 import Packet from "../packet.js";
+import RandomUtils from "../random_utils.js";
 
 class Connection extends EventEmitter {
 
@@ -247,6 +248,16 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSendTracePath(tag, auth, path) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendTracePath);
+        data.writeUInt32LE(tag);
+        data.writeUInt32LE(auth);
+        data.writeByte(0); // flags
+        data.writeBytes(path);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -305,6 +316,8 @@ class Connection extends EventEmitter {
             this.onStatusResponsePush(bufferReader);
         } else if(responseCode === Constants.PushCodes.LogRxData){
             this.onLogRxDataPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.TraceData){
+            this.onTraceDataPush(bufferReader);
         } else {
             console.log("unhandled frame", frame);
         }
@@ -365,6 +378,21 @@ class Connection extends EventEmitter {
             lastSnr: bufferReader.readInt8() / 4,
             lastRssi: bufferReader.readInt8(),
             raw: bufferReader.readRemainingBytes(),
+        });
+    }
+
+    onTraceDataPush(bufferReader) {
+        const reserved = bufferReader.readByte();
+        const pathLen = bufferReader.readUInt8();
+        this.emit(Constants.PushCodes.TraceData, {
+            reserved: reserved,
+            pathLen: pathLen,
+            flags: bufferReader.readUInt8(),
+            tag: bufferReader.readUInt32LE(),
+            authCode: bufferReader.readUInt32LE(),
+            pathHashes: bufferReader.readBytes(pathLen),
+            pathSnrs: bufferReader.readBytes(pathLen),
+            lastSnr: bufferReader.readInt8() / 4,
         });
     }
 
@@ -1629,6 +1657,49 @@ class Connection extends EventEmitter {
 
             return resolve(channels);
 
+        });
+    }
+
+    tracePath(path) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // generate a random tag for this trace, so we can listen for the correct response
+                const tag = RandomUtils.getRandomInt(0, 4294967295);
+
+                // resolve promise when we receive trace data
+                const onTraceDataPush = (response) => {
+
+                    // make sure tag matches
+                    if(response.tag !== tag){
+                        console.log("ignoring trace data for a different trace request");
+                        return;
+                    }
+
+                    // resolve
+                    this.off(Constants.PushCodes.TraceData, onTraceDataPush);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve(response);
+
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.PushCodes.TraceData, onTraceDataPush);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.on(Constants.PushCodes.TraceData, onTraceDataPush);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // trace path
+                await this.sendCommandSendTracePath(tag, 0, path);
+
+            } catch(e) {
+                reject(e);
+            }
         });
     }
 

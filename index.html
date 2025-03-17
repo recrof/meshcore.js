@@ -119,6 +119,9 @@
                 <button @click="deleteChannel" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     DeleteChannel
                 </button>
+                <button @click="sendTrace" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    SendTrace
+                </button>
             </div>
         </div>
 
@@ -556,6 +559,45 @@
                 } catch(e) {
                     alert("Failed to delete channel!");
                 }
+            },
+            getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            },
+            async sendTrace() {
+
+                // ask user for path
+                const pathString = prompt("Enter path as hex string eg: 12,3f,4d");
+                if(!pathString){
+                    return;
+                }
+
+                const pathHex = pathString.replaceAll(",", "");
+                const pathBytes = BufferUtils.hexToBytes(pathHex);
+                console.log(pathBytes);
+
+                try {
+
+                    console.log(`TRACE request for path: ${pathString}`);
+                    const response = await this.connection.tracePath(pathBytes);
+
+                    console.log("TRACE response", response);
+                    const responseList = [];
+                    for(var i = 0; i < response.pathLen; i++){
+                        const pathHash = response.pathHashes[i];
+                        const pathSnr = response.pathSnrs[i] / 4;
+                        responseList.push(`Hop ${i + 1}: hash=${pathHash.toString(16)}, snr=${pathSnr}`);
+                    }
+                    responseList.push(`Trace Received: snr=${response.lastSnr}`);
+
+                    console.log(responseList.join("\n"));
+                    alert(responseList.join("\n"));
+
+                } catch(e) {
+                    console.log(e);
+                }
+
             },
             async login(contact) {
 

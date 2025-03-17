@@ -6,6 +6,10 @@ class BufferUtils {
         }).join('');
     }
 
+    static hexToBytes(hex) {
+        return Uint8Array.from(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+    }
+
     static base64ToBytes(base64) {
         return Uint8Array.from(atob(base64), (c) => {
             return c.charCodeAt(0);

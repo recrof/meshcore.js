@@ -41,6 +41,8 @@ class Constants {
         SendStatusReq: 27, // todo
         GetChannel: 31,
         SetChannel: 32,
+        // todo sign commands
+        SendTracePath: 36,
     }
 
     static ResponseCodes = {
@@ -73,6 +75,7 @@ class Constants {
         LoginFail: 0x86, // not usable yet
         StatusResponse: 0x87,
         LogRxData: 0x88,
+        TraceData: 0x89,
     }
 
     static AdvType = {

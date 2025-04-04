@@ -23,6 +23,7 @@ class Packet {
     static PAYLOAD_TYPE_GRP_DATA = 0x06;    // an (unverified) group datagram (prefixed with channel hash, MAC) (enc data: timestamp, blob)
     static PAYLOAD_TYPE_ANON_REQ = 0x07;    // generic request (prefixed with dest_hash, ephemeral pub_key, MAC) (enc data: ...)
     static PAYLOAD_TYPE_PATH = 0x08;    // returned path (prefixed with dest/src hashes, MAC) (enc data: path, extra)
+    static PAYLOAD_TYPE_TRACE = 0x09;    // trace a path, collecting SNR for each hop
     static PAYLOAD_TYPE_RAW_CUSTOM = 0x0F;    // custom packet as raw bytes, for applications with custom encryption, payloads, etc
 
     constructor(header, path, payload) {
@@ -86,6 +87,7 @@ class Packet {
             case Packet.PAYLOAD_TYPE_GRP_DATA: return "GRP_DATA";
             case Packet.PAYLOAD_TYPE_ANON_REQ: return "ANON_REQ";
             case Packet.PAYLOAD_TYPE_PATH: return "PATH";
+            case Packet.PAYLOAD_TYPE_TRACE: return "TRACE";
             case Packet.PAYLOAD_TYPE_RAW_CUSTOM: return "RAW_CUSTOM";
             default: return null;
         }

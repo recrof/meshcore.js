@@ -190,7 +190,7 @@
 
 <script type="module">
     import Constants from "./src/constants.js";
-    import SerialConnection from "./src/connection/serial_connection.js";
+    import WebSerialConnection from "./src/connection/web_serial_connection.js";
     import BleConnection from "./src/connection/ble_connection.js";
     import BufferUtils from "./src/buffer_utils.js";
     Vue.createApp({
@@ -209,7 +209,7 @@
         },
         methods: {
             async askForSerialPort() {
-                this.connection = await SerialConnection.open();
+                this.connection = await WebSerialConnection.open();
                 this.connection.on("connected", () => this.onConnected());
                 this.connection.on("disconnected", () => this.onDisconnected());
                 // this.connection.on("tx", (data) => console.log("tx", data));

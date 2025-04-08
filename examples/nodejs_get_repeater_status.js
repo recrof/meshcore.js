@@ -10,10 +10,13 @@ connection.on("connected", async () => {
     console.log("Connected");
 
     // find contact
+    // const contact = await connection.findContactByName("Liam's Solar Repeater");
     // const contact = await connection.findContactByPublicKeyPrefix([0x93, 0x5c, 0x6b, 0x69]);
-    const contact = await connection.findContactByName("Liam's Solar Repeater");
+    // const contact = await connection.findContactByPublicKeyPrefix(Buffer.from("935c6b69", "hex"));
+    const contact = await connection.findContactByPublicKeyPrefix(Buffer.from("935c6b694200644710a374c250c76f7aed9ec2ff3e60261447d4eda7c246ce5d", "hex"));
     if(!contact){
         console.log("Contact not found");
+        await connection.close();
         return;
     }
 

@@ -10,7 +10,8 @@ connection.on("connected", async () => {
     console.log("Connected");
 
     // find contact
-    const contact = await connection.findContactByPublicKeyPrefix([0x93, 0x5c, 0x6b, 0x69]);
+    // const contact = await connection.findContactByPublicKeyPrefix([0x93, 0x5c, 0x6b, 0x69]);
+    const contact = await connection.findContactByName("Liam's Solar Repeater");
     if(!contact){
         console.log("Contact not found");
         return;

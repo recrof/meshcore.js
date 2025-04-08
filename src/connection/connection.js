@@ -760,6 +760,18 @@ class Connection extends EventEmitter {
         });
     }
 
+    async findContactByName(name) {
+
+        // get contacts
+        const contacts = await this.getContacts();
+
+        // find first contact matching name exactly
+        return contacts.find((contact) => {
+            return contact.advName === name;
+        });
+
+    }
+
     async findContactByPublicKeyPrefix(pubKeyPrefix) {
 
         // get contacts

@@ -191,7 +191,7 @@
 <script type="module">
     import Constants from "./src/constants.js";
     import WebSerialConnection from "./src/connection/web_serial_connection.js";
-    import BleConnection from "./src/connection/ble_connection.js";
+    import WebBleConnection from "./src/connection/web_ble_connection.js";
     import BufferUtils from "./src/buffer_utils.js";
     Vue.createApp({
         data() {
@@ -216,7 +216,7 @@
                 // this.connection.on("rx", (data) => console.log("rx", data));
             },
             async askForBleDevice() {
-                this.connection = await BleConnection.open();
+                this.connection = await WebBleConnection.open();
                 this.connection.on("connected", () => this.onConnected());
                 this.connection.on("disconnected", () => this.onDisconnected());
                 // this.connection.on("tx", (data) => console.log("tx", data));

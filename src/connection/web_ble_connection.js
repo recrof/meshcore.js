@@ -1,7 +1,7 @@
 import Constants from "../constants.js";
 import Connection from "./connection.js";
 
-class BleConnection extends Connection {
+class WebBleConnection extends Connection {
 
     constructor(bleDevice) {
         super();
@@ -36,7 +36,7 @@ class BleConnection extends Connection {
             return null;
         }
 
-        return new BleConnection(device);
+        return new WebBleConnection(device);
 
     }
 
@@ -103,4 +103,4 @@ class BleConnection extends Connection {
 
 }
 
-export default BleConnection;
+export default WebBleConnection;

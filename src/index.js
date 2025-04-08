@@ -1,5 +1,5 @@
 import Connection from "./connection/connection.js";
-import BleConnection from "./connection/ble_connection.js";
+import WebBleConnection from "./connection/web_ble_connection.js";
 import SerialConnection from "./connection/serial_connection.js";
 import NodeJSSerialConnection from "./connection/nodejs_serial_connection.js";
 import WebSerialConnection from "./connection/web_serial_connection.js";
@@ -11,7 +11,7 @@ import BufferUtils from "./buffer_utils.js";
 
 export {
     Connection,
-    BleConnection,
+    WebBleConnection,
     SerialConnection,
     NodeJSSerialConnection,
     WebSerialConnection,

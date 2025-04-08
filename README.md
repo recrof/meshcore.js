@@ -9,11 +9,11 @@ It can also be used in NodeJS to connect to MeshCore Companion devices over TCP/
 ## Supported Connection Methods
 
 - Web Browser
-    - BLE: [BleConnection](./src/connection/ble_connection.js)
-    - USB/Serial: [WebSerialConnection](./src/connection/web_serial_connection.js)
+    - BLE: [BleConnection()](./src/connection/ble_connection.js)
+    - USB/Serial: [WebSerialConnection()](./src/connection/web_serial_connection.js)
 - NodeJS
-    - TCP/WiFi: [TCPConnection](./src/connection/tcp_connection.js)
-    - USB/Serial: [NodeJSSerialConnection](./src/connection/nodejs_serial_connection.js)
+    - TCP/WiFi: [TCPConnection("host", "port")](./src/connection/tcp_connection.js)
+    - USB/Serial: [NodeJSSerialConnection("/dev/ttyUSB0")](./src/connection/nodejs_serial_connection.js)
 
 ## Install
 

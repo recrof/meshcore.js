@@ -26,7 +26,7 @@ npm install @liamcottle/meshcore.js
 ```
 import { TCPConnection, NodeJSSerialConnection } from "@liamcottle/meshcore.js";
 
-// serial connection are supported by "companion_radio_usb" firmware
+// serial connections are supported by "companion_radio_usb" firmware
 const connection = new NodeJSSerialConnection("/dev/cu.usbmodem14401");
 
 // tcp connections are supported by "companion_radio_wifi" firmware

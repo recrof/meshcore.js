@@ -17,8 +17,8 @@ class WebSerialConnection extends SerialConnection {
         });
 
         // fire connected callback after constructor has returned
-        setTimeout(() => {
-            this.onConnected();
+        setTimeout(async () => {
+            await this.onConnected();
         }, 0);
 
     }

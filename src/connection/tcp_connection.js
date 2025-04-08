@@ -36,8 +36,8 @@ class TCPConnection extends Connection {
         });
 
         // connect to server
-        this.socket.connect(this.port, this.host, () => {
-            this.onConnected();
+        this.socket.connect(this.port, this.host, async () => {
+            await this.onConnected();
         });
 
     }

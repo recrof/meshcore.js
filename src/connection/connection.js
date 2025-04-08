@@ -8,8 +8,18 @@ import RandomUtils from "../random_utils.js";
 
 class Connection extends EventEmitter {
 
-    onConnected() {
+    async onConnected() {
+
+        // tell device what protocol version we support
+        try {
+            await this.deviceQuery(Constants.SupportedCompanionProtocolVersion);
+        } catch(e) {
+            // ignore
+        }
+
+        // tell clients we are connected
         this.emit("connected");
+
     }
 
     onDisconnected() {
@@ -319,7 +329,7 @@ class Connection extends EventEmitter {
         } else if(responseCode === Constants.PushCodes.TraceData){
             this.onTraceDataPush(bufferReader);
         } else {
-            console.log("unhandled frame", frame);
+            console.log(`unhandled frame: code=${responseCode}`, frame);
         }
 
     }

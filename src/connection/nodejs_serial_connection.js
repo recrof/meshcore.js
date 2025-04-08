@@ -22,8 +22,8 @@ class NodeJSSerialConnection extends SerialConnection {
             baudRate: 115200,
         });
 
-        this.serialPort.on("open", () => {
-           this.onConnected();
+        this.serialPort.on("open", async () => {
+           await this.onConnected();
         });
 
         this.serialPort.on("close", () => {

@@ -72,7 +72,7 @@ class BleConnection extends Connection {
         });
 
         // fire connected event
-        this.onConnected();
+        await this.onConnected();
 
     }
 

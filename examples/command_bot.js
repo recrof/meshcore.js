@@ -2,7 +2,7 @@ import Constants from "../src/constants.js";
 import TCPConnection from "../src/connection/tcp_connection.js";
 import NodeJSSerialConnection from "../src/connection/nodejs_serial_connection.js";
 
-// create tcp connection
+// create connection
 // const connection = new TCPConnection("10.1.0.226", 5000);
 const connection = new NodeJSSerialConnection("/dev/cu.usbmodem14401");
 

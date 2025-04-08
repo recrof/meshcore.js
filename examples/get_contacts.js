@@ -1,13 +1,15 @@
 import TCPConnection from "../src/connection/tcp_connection.js";
+import NodeJSSerialConnection from "../src/connection/nodejs_serial_connection.js";
 
-// create tcp connection
-const connection = new TCPConnection("10.1.0.226", 5000);
+// create serial connection
+// const connection = new TCPConnection("10.1.0.226", 5000);
+const connection = new NodeJSSerialConnection("/dev/cu.usbmodem14401");
 
 // wait until connected
 connection.on("connected", async () => {
 
     // we are now connected
-    console.log(`Connected to: [${connection.host}:${connection.port}]`);
+    console.log("Connected");
 
     // log contacts
     const contacts = await connection.getContacts();
@@ -19,7 +21,7 @@ connection.on("connected", async () => {
     // await connection.sendChannelTextMessage(0, "test");
 
     // disconnect
-    connection.close();
+    await connection.close();
 
 });
 

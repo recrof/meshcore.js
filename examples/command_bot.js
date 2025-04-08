@@ -1,14 +1,16 @@
-import TCPConnection from "../src/connection/tcp_connection.js";
 import Constants from "../src/constants.js";
+import TCPConnection from "../src/connection/tcp_connection.js";
+import NodeJSSerialConnection from "../src/connection/nodejs_serial_connection.js";
 
 // create tcp connection
-const connection = new TCPConnection("10.1.0.226", 5000);
+// const connection = new TCPConnection("10.1.0.226", 5000);
+const connection = new NodeJSSerialConnection("/dev/cu.usbmodem14401");
 
 // wait until connected
 connection.on("connected", async () => {
 
     // we are now connected
-    console.log(`Connected to: [${connection.host}:${connection.port}]`);
+    console.log("Connected");
 
     // set device time
     await setDeviceTime();

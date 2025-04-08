@@ -12,8 +12,8 @@ connection.on("connected", async () => {
     // we are now connected
     console.log("Connected");
 
-    // set device time
-    await setDeviceTime();
+    // update clock on meshcore device
+    await connection.syncDeviceTime();
 
     // send flood advert when connected
     await connection.sendFloodAdvert();
@@ -35,15 +35,6 @@ connection.on(Constants.PushCodes.MsgWaiting, async () => {
         console.log(e);
     }
 });
-
-async function setDeviceTime() {
-    try {
-        // update time on meshcore device
-        await connection.setDeviceTime(Math.floor(Date.now() / 1000));
-    } catch(e) {
-        // ignore sync error
-    }
-}
 
 async function onContactMessageReceived(message) {
 

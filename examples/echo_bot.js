@@ -12,6 +12,9 @@ connection.on("connected", async () => {
     // we are now connected
     console.log("Connected");
 
+    // update clock on meshcore device
+    await connection.syncDeviceTime();
+
     // send flood advert when connected
     await connection.sendFloodAdvert();
 

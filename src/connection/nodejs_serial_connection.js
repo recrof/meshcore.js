@@ -2,16 +2,15 @@ import SerialConnection from "./serial_connection.js";
 
 class NodeJSSerialConnection extends SerialConnection {
 
-    constructor() {
+    /**
+     * @param path serial port to connect to, e.g: "/dev/ttyACM0" or "/dev/cu.usbmodem14401"
+     */
+    constructor(path) {
         super();
+        this.serialPortPath = path;
     }
 
-    /**
-     * Connect to Serial Port at the provided path
-     * @param path serial port to connect to, e.g: "/dev/ttyACM0" or "/dev/cu.usbmodem14401"
-     * @returns {Promise<void>}
-     */
-    async connect(path) {
+    async connect() {
 
         // note: serialport module is only available in NodeJS, you shouldn't use NodeJSSerialConnection from a web browser
         const { SerialPort } = await import('serialport');
@@ -19,7 +18,7 @@ class NodeJSSerialConnection extends SerialConnection {
         // create new serial port
         this.serialPort = new SerialPort({
             autoOpen: false, // don't auto open, we want to control this manually
-            path: path, // e.g: "/dev/ttyACM0" or "/dev/cu.usbmodem14401"
+            path: this.serialPortPath, // e.g: "/dev/ttyACM0" or "/dev/cu.usbmodem14401"
             baudRate: 115200,
         });
 

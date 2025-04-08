@@ -1,7 +1,7 @@
 import NodeJSSerialConnection from "../src/connection/nodejs_serial_connection.js";
 
 // create tcp connection
-const connection = new NodeJSSerialConnection();
+const connection = new NodeJSSerialConnection("/dev/cu.usbmodem14401");
 
 // wait until connected
 connection.on("connected", async () => {
@@ -24,4 +24,4 @@ connection.on("connected", async () => {
 });
 
 // connect to meshcore device
-await connection.connect("/dev/cu.usbmodem14401");
+await connection.connect();

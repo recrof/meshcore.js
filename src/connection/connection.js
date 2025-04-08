@@ -1692,6 +1692,31 @@ class Connection extends EventEmitter {
         });
     }
 
+    async findChannelByName(name) {
+
+        // get channels
+        const channels = await this.getChannels();
+
+        // find first channel matching name exactly
+        return channels.find((channel) => {
+            console.log(channel);
+            return channel.name === name;
+        });
+
+    }
+
+    async findChannelBySecret(secret) {
+
+        // get channels
+        const channels = await this.getChannels();
+
+        // find first channel matching secret
+        return channels.find((channel) => {
+            return BufferUtils.areBuffersEqual(secret, channel.secret);
+        });
+
+    }
+
     tracePath(path) {
         return new Promise(async (resolve, reject) => {
             try {

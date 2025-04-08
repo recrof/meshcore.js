@@ -14,9 +14,18 @@ connection.on("connected", async () => {
     // update clock on meshcore device
     await connection.syncDeviceTime();
 
-    // send message to channel 0
+    // find channel
+    const channel = await connection.findChannelByName("Public");
+    // const channel = await connection.findChannelBySecret(Buffer.from("8b3387e9c5cdea6ac9e5edbaa115cd72", "hex"));
+    if(!channel){
+        console.log("Channel not found");
+        await connection.close();
+        return;
+    }
+
+    // send message to channel
     console.log("Sending message...");
-    await connection.sendChannelTextMessage(0, "Hello from MeshCore.js");
+    await connection.sendChannelTextMessage(channel.channelIdx, "Hello from MeshCore.js");
 
     // disconnect
     await connection.close();

@@ -981,6 +981,10 @@ class Connection extends EventEmitter {
         });
     }
 
+    async syncDeviceTime() {
+        await this.setDeviceTime(Math.floor(Date.now() / 1000));
+    }
+
     importContact(advertPacketBytes) {
         return new Promise(async (resolve, reject) => {
             try {

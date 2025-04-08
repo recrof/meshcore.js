@@ -1363,6 +1363,7 @@ class Connection extends EventEmitter {
                 const publicKeyPrefix = contactPublicKey.subarray(0, 6);
 
                 // listen for sent response so we can get estimated timeout
+                var timeoutHandler = null;
                 const onSent = (response) => {
 
                     // remove error listener since we received sent response
@@ -1370,7 +1371,7 @@ class Connection extends EventEmitter {
 
                     // reject login request as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;
-                    setTimeout(() => {
+                    timeoutHandler = setTimeout(() => {
                         reject("timeout");
                     }, estTimeout);
 
@@ -1386,6 +1387,7 @@ class Connection extends EventEmitter {
                     }
 
                     // login successful
+                    clearTimeout(timeoutHandler);
                     this.off(Constants.ResponseCodes.Err, onErr);
                     this.off(Constants.ResponseCodes.Sent, onSent);
                     this.off(Constants.PushCodes.LoginSuccess, onLoginSuccess);
@@ -1395,6 +1397,7 @@ class Connection extends EventEmitter {
 
                 // reject promise when we receive err
                 const onErr = () => {
+                    clearTimeout(timeoutHandler);
                     this.off(Constants.ResponseCodes.Err, onErr);
                     this.off(Constants.ResponseCodes.Sent, onSent);
                     this.off(Constants.PushCodes.LoginSuccess, onLoginSuccess);
@@ -1423,6 +1426,7 @@ class Connection extends EventEmitter {
                 const publicKeyPrefix = contactPublicKey.subarray(0, 6);
 
                 // listen for sent response so we can get estimated timeout
+                var timeoutHandler = null;
                 const onSent = (response) => {
 
                     // remove error listener since we received sent response
@@ -1430,7 +1434,7 @@ class Connection extends EventEmitter {
 
                     // reject login request as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;
-                    setTimeout(() => {
+                    timeoutHandler = setTimeout(() => {
                         reject("timeout");
                     }, estTimeout);
 
@@ -1446,6 +1450,7 @@ class Connection extends EventEmitter {
                     }
 
                     // status request successful
+                    clearTimeout(timeoutHandler);
                     this.off(Constants.ResponseCodes.Err, onErr);
                     this.off(Constants.ResponseCodes.Sent, onSent);
                     this.off(Constants.PushCodes.StatusResponse, onStatusResponsePush);
@@ -1477,6 +1482,7 @@ class Connection extends EventEmitter {
 
                 // reject promise when we receive err
                 const onErr = () => {
+                    clearTimeout(timeoutHandler);
                     this.off(Constants.ResponseCodes.Err, onErr);
                     this.off(Constants.ResponseCodes.Sent, onSent);
                     this.off(Constants.PushCodes.StatusResponse, onStatusResponsePush);

@@ -1,6 +1,6 @@
 import NodeJSSerialConnection from "../src/connection/nodejs_serial_connection.js";
 
-// create tcp connection
+// create serial connection
 const connection = new NodeJSSerialConnection("/dev/cu.usbmodem14401");
 
 // wait until connected

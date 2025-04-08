@@ -63,8 +63,7 @@ class WebSerialConnection extends SerialConnection {
 
     }
 
-    // override
-    async write(bytes) {
+    /* override */ async write(bytes) {
         const writer = this.writable.getWriter();
         try {
             await writer.write(new Uint8Array(bytes));

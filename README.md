@@ -24,11 +24,13 @@ npm install @liamcottle/meshcore.js
 ## Simple Example
 
 ```
-import { TCPConnection } from "@liamcottle/meshcore.js";
+import { TCPConnection, NodeJSSerialConnection } from "@liamcottle/meshcore.js";
 
-// create tcp connection
-// tcp connections are supported by "Heltec_v3_companion_radio_wifi"
-const connection = new TCPConnection("10.1.0.226", 5000);
+// serial connection are supported by "companion_radio_usb" firmware
+const connection = new NodeJSSerialConnection("/dev/cu.usbmodem14401");
+
+// tcp connections are supported by "companion_radio_wifi" firmware
+// const connection = new TCPConnection("10.1.0.226", 5000);
 
 // wait until connected
 connection.on("connected", async () => {

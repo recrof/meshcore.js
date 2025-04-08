@@ -6,6 +6,15 @@ This library can be used in a Web Browser to connect to MeshCore Companion devic
 
 It can also be used in NodeJS to connect to MeshCore Companion devices over TCP/WiFi or USB Serial.
 
+## Supported Connection Methods
+
+- Web Browser
+    - BLE: [BleConnection](./src/connection/ble_connection.js)
+    - USB/Serial: [WebSerialConnection](./src/connection/web_serial_connection.js)
+- NodeJS
+    - TCP/WiFi: [TCPConnection](./src/connection/tcp_connection.js)
+    - USB/Serial: [NodeJSSerialConnection](./src/connection/nodejs_serial_connection.js)
+
 ## Install
 
 ```

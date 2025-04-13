@@ -393,15 +393,13 @@
                 if(message.contactMessage){
 
                     // check if from cli contact
-                    if(BufferUtils.areBuffersEqual(message.contactMessage.pubKeyPrefix, this.cliContact.publicKey.subarray(0, 6))){
+                    if(this.cliContact && BufferUtils.areBuffersEqual(message.contactMessage.pubKeyPrefix, this.cliContact.publicKey.subarray(0, 6))){
 
                         // add remote response
                         this.cliMessages.push({
                             is_incoming: true,
                             text: message.contactMessage.text,
                         });
-
-                        console.log("yes");
                     }
 
                 }

@@ -83,6 +83,15 @@ class Constants {
         NewAdvert: 0x8A, // when companion is set to manually add contacts
     }
 
+    static ErrorCodes = {
+        UnsupportedCmd: 1,
+        NotFound: 2,
+        TableFull: 3,
+        BadState: 4,
+        FileIoError: 5,
+        IllegalArg: 6,
+    }
+
     static AdvType = {
         None: 0,
         Chat: 1,

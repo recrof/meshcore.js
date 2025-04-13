@@ -45,6 +45,8 @@ class Constants {
         SetChannel: 32,
         // todo sign commands
         SendTracePath: 36,
+        // todo set device pin command
+        SetOtherParams: 38,
     }
 
     static ResponseCodes = {
@@ -68,7 +70,7 @@ class Constants {
     }
 
     static PushCodes = {
-        Advert: 0x80,
+        Advert: 0x80, // when companion is set to auto add contacts
         PathUpdated: 0x81,
         SendConfirmed: 0x82,
         MsgWaiting: 0x83,
@@ -78,6 +80,7 @@ class Constants {
         StatusResponse: 0x87,
         LogRxData: 0x88,
         TraceData: 0x89,
+        NewAdvert: 0x8A, // when companion is set to manually add contacts
     }
 
     static AdvType = {

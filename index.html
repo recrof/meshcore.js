@@ -122,6 +122,12 @@
                 <button @click="sendTrace" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
                     SendTrace
                 </button>
+                <button @click="setAutoAddContacts" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    setAutoAddContacts
+                </button>
+                <button @click="setManualAddContacts" class="border border-gray-500 px-2 bg-gray-100 hover:bg-gray-200 rounded">
+                    setManualAddContacts
+                </button>
             </div>
         </div>
 
@@ -274,6 +280,7 @@
             },
             async loadSelfInfo() {
                 this.selfInfo = await this.connection.getSelfInfo();
+                console.log(this.selfInfo);
             },
             async loadContacts() {
                 this.contacts = await this.connection.getContacts();
@@ -646,6 +653,22 @@
                     alert(`Failed to login: ${e}`);
                 }
 
+            },
+            async setAutoAddContacts() {
+                try {
+                    await this.connection.setAutoAddContacts();
+                } catch(e) {
+                    console.log(e);
+                    alert("failed to set auto add contacts");
+                }
+            },
+            async setManualAddContacts() {
+                try {
+                    await this.connection.setManualAddContacts();
+                } catch(e) {
+                    console.log(e);
+                    alert("failed to set manual add contacts");
+                }
             },
             showCommandLine(contact) {
 

@@ -268,6 +268,13 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSetOtherParams(manualAddContacts) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SetOtherParams);
+        data.writeByte(manualAddContacts); // 0 or 1
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     onFrameReceived(frame) {
 
         // emit received frame
@@ -513,7 +520,8 @@ class Connection extends EventEmitter {
             publicKey: bufferReader.readBytes(32),
             advLat: bufferReader.readInt32LE(),
             advLon: bufferReader.readInt32LE(),
-            reserved: bufferReader.readBytes(4),
+            reserved: bufferReader.readBytes(3),
+            manualAddContacts: bufferReader.readByte(),
             radioFreq: bufferReader.readUInt32LE(),
             radioBw: bufferReader.readUInt32LE(),
             radioSf: bufferReader.readByte(),
@@ -1758,6 +1766,45 @@ class Connection extends EventEmitter {
                 reject(e);
             }
         });
+    }
+
+    setOtherParams(manualAddContacts) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // resolve promise when we receive ok
+                const onOk = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    resolve();
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    this.off(Constants.ResponseCodes.Ok, onOk);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Ok, onOk);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // set other params
+                await this.sendCommandSetOtherParams(manualAddContacts);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    async setAutoAddContacts() {
+        return await this.setOtherParams(false);
+    }
+
+    async setManualAddContacts() {
+        return await this.setOtherParams(true);
     }
 
 }

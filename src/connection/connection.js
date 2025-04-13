@@ -335,6 +335,8 @@ class Connection extends EventEmitter {
             this.onLogRxDataPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.TraceData){
             this.onTraceDataPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.NewAdvert){
+            this.onNewAdvertPush(bufferReader);
         } else {
             console.log(`unhandled frame: code=${responseCode}`, frame);
         }
@@ -410,6 +412,21 @@ class Connection extends EventEmitter {
             pathHashes: bufferReader.readBytes(pathLen),
             pathSnrs: bufferReader.readBytes(pathLen),
             lastSnr: bufferReader.readInt8() / 4,
+        });
+    }
+
+    onNewAdvertPush(bufferReader) {
+        this.emit(Constants.PushCodes.NewAdvert, {
+            publicKey: bufferReader.readBytes(32),
+            type: bufferReader.readByte(),
+            flags: bufferReader.readByte(),
+            outPathLen: bufferReader.readInt8(),
+            outPath: bufferReader.readBytes(64),
+            advName: bufferReader.readCString(32),
+            lastAdvert: bufferReader.readUInt32LE(),
+            advLat: bufferReader.readUInt32LE(),
+            advLon: bufferReader.readUInt32LE(),
+            lastMod: bufferReader.readUInt32LE(),
         });
     }
 

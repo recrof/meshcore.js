@@ -38,12 +38,17 @@ class Advert {
         return this.appData[0];
     }
 
-    getTypeString() {
+    getType() {
         const flags = this.getFlags();
-        if(flags & Advert.ADV_TYPE_NONE) return "NONE";
-        if(flags & Advert.ADV_TYPE_CHAT) return "CHAT";
-        if(flags & Advert.ADV_TYPE_REPEATER) return "REPEATER";
-        if(flags & Advert.ADV_TYPE_ROOM) return "ROOM";
+        return flags & 0x0F;
+    }
+
+    getTypeString() {
+        const type = this.getType();
+        if(type === Advert.ADV_TYPE_NONE) return "NONE";
+        if(type === Advert.ADV_TYPE_CHAT) return "CHAT";
+        if(type === Advert.ADV_TYPE_REPEATER) return "REPEATER";
+        if(type === Advert.ADV_TYPE_ROOM) return "ROOM";
         return null;
     }
 

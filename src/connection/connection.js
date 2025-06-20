@@ -242,6 +242,16 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSendTelemetryReq(publicKey) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendTelemetryReq);
+        data.writeByte(0); // reserved
+        data.writeByte(0); // reserved
+        data.writeByte(0); // reserved
+        data.writeBytes(publicKey); // 32 bytes - id of destination node
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandGetChannel(channelIdx) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.GetChannel);
@@ -333,6 +343,8 @@ class Connection extends EventEmitter {
             this.onStatusResponsePush(bufferReader);
         } else if(responseCode === Constants.PushCodes.LogRxData){
             this.onLogRxDataPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.TelemetryResponse){
+            this.onTelemetryResponsePush(bufferReader);
         } else if(responseCode === Constants.PushCodes.TraceData){
             this.onTraceDataPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.NewAdvert){
@@ -397,6 +409,14 @@ class Connection extends EventEmitter {
             lastSnr: bufferReader.readInt8() / 4,
             lastRssi: bufferReader.readInt8(),
             raw: bufferReader.readRemainingBytes(),
+        });
+    }
+
+    onTelemetryResponsePush(bufferReader) {
+        this.emit(Constants.PushCodes.TelemetryResponse, {
+            reserved: bufferReader.readByte(), // reserved
+            pubKeyPrefix: bufferReader.readBytes(6), // 6 bytes of public key this telemetry response is from
+            lppSensorData: bufferReader.readRemainingBytes(),
         });
     }
 
@@ -1537,6 +1557,70 @@ class Connection extends EventEmitter {
 
                 // request status
                 await this.sendCommandSendStatusReq(contactPublicKey);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    getTelemetry(contactPublicKey, extraTimeoutMillis = 1000) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // get public key prefix we expect in the telemetry response
+                const publicKeyPrefix = contactPublicKey.subarray(0, 6);
+
+                // listen for sent response so we can get estimated timeout
+                var timeoutHandler = null;
+                const onSent = (response) => {
+
+                    // remove error listener since we received sent response
+                    this.once(Constants.ResponseCodes.Err, onErr);
+
+                    // reject as timed out after estimated delay, plus a bit extra
+                    const estTimeout = response.estTimeout + extraTimeoutMillis;
+                    timeoutHandler = setTimeout(() => {
+                        reject("timeout");
+                    }, estTimeout);
+
+                }
+
+                // resolve promise when we receive telemetry response push code
+                const onTelemetryResponsePush = (response) => {
+
+                    // make sure telemetry response is for this telemetry request
+                    if(!BufferUtils.areBuffersEqual(publicKeyPrefix, response.pubKeyPrefix)){
+                        console.log("onTelemetryResponsePush is not for this telemetry request, ignoring...");
+                        return;
+                    }
+
+                    // telemetry request successful
+                    clearTimeout(timeoutHandler);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.TelemetryResponse, onTelemetryResponsePush);
+
+                    resolve(response);
+
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    clearTimeout(timeoutHandler);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.TelemetryResponse, onTelemetryResponsePush);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Err, onErr);
+                this.once(Constants.ResponseCodes.Sent, onSent);
+                this.once(Constants.PushCodes.TelemetryResponse, onTelemetryResponsePush);
+
+                // request telemetry
+                await this.sendCommandSendTelemetryReq(contactPublicKey);
 
             } catch(e) {
                 reject(e);

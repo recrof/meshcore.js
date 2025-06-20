@@ -47,6 +47,7 @@ class Constants {
         SendTracePath: 36,
         // todo set device pin command
         SetOtherParams: 38,
+        SendTelemetryReq: 39,
     }
 
     static ResponseCodes = {
@@ -81,6 +82,7 @@ class Constants {
         LogRxData: 0x88,
         TraceData: 0x89,
         NewAdvert: 0x8A, // when companion is set to manually add contacts
+        TelemetryResponse: 0x8B,
     }
 
     static ErrorCodes = {

@@ -1521,7 +1521,7 @@ class Connection extends EventEmitter {
                     const repeaterStats = {
                         batt_milli_volts: bufferReader.readUInt16LE(), // uint16_t batt_milli_volts;
                         curr_tx_queue_len: bufferReader.readUInt16LE(), // uint16_t curr_tx_queue_len;
-                        curr_free_queue_len: bufferReader.readUInt16LE(), // uint16_t curr_free_queue_len;
+                        noise_floor: bufferReader.readInt16LE(), // int16_t noise_floor;
                         last_rssi: bufferReader.readInt16LE(), // int16_t  last_rssi;
                         n_packets_recv: bufferReader.readUInt32LE(), // uint32_t n_packets_recv;
                         n_packets_sent: bufferReader.readUInt32LE(), // uint32_t n_packets_sent;
@@ -1531,7 +1531,7 @@ class Connection extends EventEmitter {
                         n_sent_direct: bufferReader.readUInt32LE(), // uint32_t n_sent_direct
                         n_recv_flood: bufferReader.readUInt32LE(), // uint32_t n_recv_flood
                         n_recv_direct: bufferReader.readUInt32LE(), // uint32_t n_recv_direct
-                        n_full_events: bufferReader.readUInt16LE(), // uint16_t n_full_events
+                        err_events: bufferReader.readUInt16LE(), // uint16_t err_events
                         last_snr: bufferReader.readInt16LE(), // int16_t last_snr
                         n_direct_dups: bufferReader.readUInt16LE(), // uint16_t n_direct_dups
                         n_flood_dups: bufferReader.readUInt16LE(), // uint16_t n_flood_dups

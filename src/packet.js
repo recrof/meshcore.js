@@ -1,4 +1,5 @@
 import BufferReader from "./buffer_reader.js";
+import Advert from "./advert.js";
 
 class Packet {
 
@@ -112,6 +113,7 @@ class Packet {
             case Packet.PAYLOAD_TYPE_RESPONSE: return this.parsePayloadTypeResponse();
             case Packet.PAYLOAD_TYPE_TXT_MSG: return this.parsePayloadTypeTxtMsg();
             case Packet.PAYLOAD_TYPE_ACK: return this.parsePayloadTypeAck();
+            case Packet.PAYLOAD_TYPE_ADVERT: return this.parsePayloadTypeAdvert();
             case Packet.PAYLOAD_TYPE_ANON_REQ: return this.parsePayloadTypeAnonReq();
             default: return null;
         }
@@ -181,6 +183,15 @@ class Packet {
     parsePayloadTypeAck() {
         return {
             ack_code: this.payload,
+        };
+    }
+
+    parsePayloadTypeAdvert() {
+        const advert = Advert.fromBytes(this.payload);
+        return {
+            public_key: advert.publicKey,
+            timestamp: advert.timestamp,
+            app_data: advert.parseAppData(),
         };
     }
 

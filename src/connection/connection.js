@@ -1808,7 +1808,6 @@ class Connection extends EventEmitter {
 
         // find first channel matching name exactly
         return channels.find((channel) => {
-            console.log(channel);
             return channel.name === name;
         });
 

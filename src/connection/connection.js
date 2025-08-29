@@ -1825,12 +1825,30 @@ class Connection extends EventEmitter {
 
     }
 
-    tracePath(path) {
+    tracePath(path, extraTimeoutMillis = 0) {
         return new Promise(async (resolve, reject) => {
             try {
 
                 // generate a random tag for this trace, so we can listen for the correct response
                 const tag = RandomUtils.getRandomInt(0, 4294967295);
+
+                // listen for sent response so we can get estimated timeout
+                var timeoutHandler = null;
+                const onSent = (response) => {
+
+                    // remove error listener since we received sent response
+                    this.off(Constants.ResponseCodes.Err, onErr);
+
+                    // reject trace request as timed out after estimated delay, plus a bit extra
+                    const estTimeout = response.estTimeout + extraTimeoutMillis;
+                    timeoutHandler = setTimeout(() => {
+                        this.off(Constants.ResponseCodes.Sent, onSent);
+                        this.off(Constants.PushCodes.TraceData, onTraceDataPush);
+                        this.off(Constants.ResponseCodes.Err, onErr);
+                        reject("timeout");
+                    }, estTimeout);
+
+                }
 
                 // resolve promise when we receive trace data
                 const onTraceDataPush = (response) => {
@@ -1842,6 +1860,8 @@ class Connection extends EventEmitter {
                     }
 
                     // resolve
+                    clearTimeout(timeoutHandler);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
                     this.off(Constants.PushCodes.TraceData, onTraceDataPush);
                     this.off(Constants.ResponseCodes.Err, onErr);
                     resolve(response);
@@ -1850,12 +1870,15 @@ class Connection extends EventEmitter {
 
                 // reject promise when we receive err
                 const onErr = () => {
+                    clearTimeout(timeoutHandler);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
                     this.off(Constants.PushCodes.TraceData, onTraceDataPush);
                     this.off(Constants.ResponseCodes.Err, onErr);
                     reject();
                 }
 
                 // listen for events
+                this.once(Constants.ResponseCodes.Sent, onSent);
                 this.on(Constants.PushCodes.TraceData, onTraceDataPush);
                 this.once(Constants.ResponseCodes.Err, onErr);
 

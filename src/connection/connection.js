@@ -1433,6 +1433,9 @@ class Connection extends EventEmitter {
                     // reject login request as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;
                     timeoutHandler = setTimeout(() => {
+                        this.off(Constants.ResponseCodes.Err, onErr);
+                        this.off(Constants.ResponseCodes.Sent, onSent);
+                        this.off(Constants.PushCodes.LoginSuccess, onLoginSuccess);
                         reject("timeout");
                     }, estTimeout);
 
@@ -1496,6 +1499,9 @@ class Connection extends EventEmitter {
                     // reject login request as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;
                     timeoutHandler = setTimeout(() => {
+                        this.off(Constants.ResponseCodes.Err, onErr);
+                        this.off(Constants.ResponseCodes.Sent, onSent);
+                        this.off(Constants.PushCodes.StatusResponse, onStatusResponsePush);
                         reject("timeout");
                     }, estTimeout);
 
@@ -1581,6 +1587,9 @@ class Connection extends EventEmitter {
                     // reject as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;
                     timeoutHandler = setTimeout(() => {
+                        this.off(Constants.ResponseCodes.Err, onErr);
+                        this.off(Constants.ResponseCodes.Sent, onSent);
+                        this.off(Constants.PushCodes.TelemetryResponse, onTelemetryResponsePush);
                         reject("timeout");
                     }, estTimeout);
 

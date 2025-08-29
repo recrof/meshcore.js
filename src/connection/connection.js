@@ -1428,7 +1428,7 @@ class Connection extends EventEmitter {
                 const onSent = (response) => {
 
                     // remove error listener since we received sent response
-                    this.once(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Err, onErr);
 
                     // reject login request as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;
@@ -1491,7 +1491,7 @@ class Connection extends EventEmitter {
                 const onSent = (response) => {
 
                     // remove error listener since we received sent response
-                    this.once(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Err, onErr);
 
                     // reject login request as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;
@@ -1576,7 +1576,7 @@ class Connection extends EventEmitter {
                 const onSent = (response) => {
 
                     // remove error listener since we received sent response
-                    this.once(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Err, onErr);
 
                     // reject as timed out after estimated delay, plus a bit extra
                     const estTimeout = response.estTimeout + extraTimeoutMillis;

@@ -60,10 +60,22 @@ class BufferReader {
         return view.getUint16(0, true);
     }
 
+    readUInt16BE() {
+        const bytes = this.readBytes(2);
+        const view = new DataView(bytes.buffer);
+        return view.getUint16(0, false);
+    }
+
     readUInt32LE() {
         const bytes = this.readBytes(4);
         const view = new DataView(bytes.buffer);
         return view.getUint32(0, true);
+    }
+
+    readUInt32BE() {
+        const bytes = this.readBytes(4);
+        const view = new DataView(bytes.buffer);
+        return view.getUint32(0, false);
     }
 
     readInt16LE() {
@@ -72,10 +84,33 @@ class BufferReader {
         return view.getInt16(0, true);
     }
 
+    readInt16BE() {
+        const bytes = this.readBytes(2);
+        const view = new DataView(bytes.buffer);
+        return view.getInt16(0, false);
+    }
+
     readInt32LE() {
         const bytes = this.readBytes(4);
         const view = new DataView(bytes.buffer);
         return view.getInt32(0, true);
+    }
+
+    readInt24BE() {
+
+        // read 24-bit (3 bytes) big endian integer
+        var value = (this.readByte() << 16) | (this.readByte() << 8) | this.readByte();
+
+        // convert 24-bit signed integer to 32-bit signed integer
+        // 0x800000 is the sign bit for a 24-bit value
+        // if it's set, value is negative in 24-bit two's complement
+        // so we subtract 0x1000000 (which is 2^24) to get the correct negative value as a Dart integer
+        if((value & 0x800000) !== 0){
+            value -= 0x1000000;
+        }
+
+        return value;
+
     }
 
 }

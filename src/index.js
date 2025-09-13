@@ -8,6 +8,7 @@ import Constants from "./constants.js";
 import Advert from "./advert.js";
 import Packet from "./packet.js";
 import BufferUtils from "./buffer_utils.js";
+import CayenneLpp from "./cayenne_lpp.js";
 
 export {
     Connection,
@@ -20,4 +21,5 @@ export {
     Advert,
     Packet,
     BufferUtils,
+    CayenneLpp,
 };

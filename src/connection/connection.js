@@ -2028,6 +2028,8 @@ class Connection extends EventEmitter {
     }
 
     // REQ_TYPE_GET_NEIGHBOURS from Repeater role
+    // https://github.com/meshcore-dev/MeshCore/pull/833
+    // Repeater must be running firmware v1.9.0+
     async getNeighbours(publicKey,
         count = 10,
         offset = 0,

@@ -252,6 +252,14 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSendBinaryReq(publicKey, requestCodeAndParams) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SendBinaryReq);
+        data.writeBytes(publicKey); // 32 bytes - public key of contact to send request to
+        data.writeBytes(requestCodeAndParams);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandGetChannel(channelIdx) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.GetChannel);
@@ -349,6 +357,8 @@ class Connection extends EventEmitter {
             this.onTraceDataPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.NewAdvert){
             this.onNewAdvertPush(bufferReader);
+        } else if(responseCode === Constants.PushCodes.BinaryResponse){
+            this.onBinaryResponsePush(bufferReader);
         } else {
             console.log(`unhandled frame: code=${responseCode}`, frame);
         }
@@ -417,6 +427,14 @@ class Connection extends EventEmitter {
             reserved: bufferReader.readByte(), // reserved
             pubKeyPrefix: bufferReader.readBytes(6), // 6 bytes of public key this telemetry response is from
             lppSensorData: bufferReader.readRemainingBytes(),
+        });
+    }
+
+    onBinaryResponsePush(bufferReader) {
+        this.emit(Constants.PushCodes.BinaryResponse, {
+            reserved: bufferReader.readByte(), // reserved
+            tag: bufferReader.readUInt32LE(), // 4 bytes tag
+            responseData: bufferReader.readRemainingBytes(),
         });
     }
 
@@ -1637,6 +1655,75 @@ class Connection extends EventEmitter {
         });
     }
 
+    sendBinaryRequest(contactPublicKey, requestCodeAndParams, extraTimeoutMillis = 1000) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                // we need the tag for this request (provided in sent listener), so we can listen for the response
+                var tag = null;
+
+                // listen for sent response so we can get estimated timeout
+                var timeoutHandler = null;
+                const onSent = (response) => {
+
+                    tag = response.expectedAckCrc;
+
+                    // remove error listener since we received sent response
+                    this.off(Constants.ResponseCodes.Err, onErr);
+
+                    // reject as timed out after estimated delay, plus a bit extra
+                    const estTimeout = response.estTimeout + extraTimeoutMillis;
+                    timeoutHandler = setTimeout(() => {
+                        this.off(Constants.ResponseCodes.Err, onErr);
+                        this.off(Constants.ResponseCodes.Sent, onSent);
+                        this.off(Constants.PushCodes.BinaryResponse, onBinaryResponsePush);
+                        reject("timeout");
+                    }, estTimeout);
+
+                }
+
+                // resolve promise when we receive binary response push code
+                const onBinaryResponsePush = (response) => {
+
+                    // make sure tag matches
+                    if(tag !== response.tag){
+                        console.log("onBinaryResponse is not for this request tag, ignoring...");
+                        return;
+                    }
+
+                    // binary request successful
+                    clearTimeout(timeoutHandler);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.BinaryResponse, onBinaryResponsePush);
+
+                    resolve(response.responseData);
+
+                }
+
+                // reject promise when we receive err
+                const onErr = () => {
+                    clearTimeout(timeoutHandler);
+                    this.off(Constants.ResponseCodes.Err, onErr);
+                    this.off(Constants.ResponseCodes.Sent, onSent);
+                    this.off(Constants.PushCodes.BinaryResponse, onBinaryResponsePush);
+                    reject();
+                }
+
+                // listen for events
+                this.once(Constants.ResponseCodes.Err, onErr);
+                this.once(Constants.ResponseCodes.Sent, onSent);
+                this.once(Constants.PushCodes.BinaryResponse, onBinaryResponsePush);
+
+                // send binary request
+                await this.sendCommandSendBinaryReq(contactPublicKey, requestCodeAndParams);
+
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
     // @deprecated migrate to using tracePath instead. pingRepeaterZeroHop will be removed in a future update
     pingRepeaterZeroHop(contactPublicKey, timeoutMillis) {
         return new Promise(async (resolve, reject) => {
@@ -1938,6 +2025,64 @@ class Connection extends EventEmitter {
 
     async setManualAddContacts() {
         return await this.setOtherParams(true);
+    }
+
+    // REQ_TYPE_GET_NEIGHBOURS from Repeater role
+    async getNeighbours(publicKey,
+        count = 10,
+        offset = 0,
+        orderBy = 0, // 0=newest_to_oldest, 1=oldest_to_newest, 2=strongest_to_weakest, 3=weakest_to_strongest
+        pubKeyPrefixLength = 8,
+    ) {
+
+        // get neighbours:
+        // req_data[0] = REQ_TYPE_GET_NEIGHBOURS
+        // req_data[1] = request_version=0
+        // req_data[2] = count=10 how many neighbours to fetch
+        // req_data[3..4] = offset=0 (uint16_t)
+        // req_data[5] = order_by=0
+        // req_data[6] = pubkey_prefix_len=8
+        // req_data[7..10] = random blob (help hash)
+        const bufferWriter = new BufferWriter();
+        bufferWriter.writeByte(Constants.BinaryRequestTypes.GetNeighbours);
+        bufferWriter.writeByte(0); // request_version=0
+        bufferWriter.writeByte(count);
+        bufferWriter.writeUInt16LE(offset);
+        bufferWriter.writeByte(orderBy);
+        bufferWriter.writeByte(pubKeyPrefixLength);
+        bufferWriter.writeUInt32LE(RandomUtils.getRandomInt(0, 4294967295)); // 4 bytes random blob
+
+        // send binary request
+        const responseData = await this.sendBinaryRequest(publicKey, bufferWriter.toBytes());
+
+        // parse response
+        const bufferReader = new BufferReader(responseData);
+        const totalNeighboursCount = bufferReader.readUInt16LE();
+        const resultsCount = bufferReader.readUInt16LE();
+
+        // parse neighbours list
+        const neighbours = [];
+        for(var i = 0; i < resultsCount; i++){
+
+            // read info
+            const publicKeyPrefix = bufferReader.readBytes(pubKeyPrefixLength);
+            const heardSecondsAgo = bufferReader.readUInt32LE();
+            const snr = bufferReader.readInt8() / 4;
+
+            // add to list
+            neighbours.push({
+                publicKeyPrefix: publicKeyPrefix,
+                heardSecondsAgo: heardSecondsAgo,
+                snr: snr,
+            });
+
+        }
+
+        return {
+            totalNeighboursCount: totalNeighboursCount,
+            neighbours: neighbours,
+        };
+
     }
 
 }

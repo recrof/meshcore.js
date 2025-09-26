@@ -48,6 +48,8 @@ class Constants {
         // todo set device pin command
         SetOtherParams: 38,
         SendTelemetryReq: 39,
+
+        SendBinaryReq: 50,
     }
 
     static ResponseCodes = {
@@ -83,6 +85,7 @@ class Constants {
         TraceData: 0x89,
         NewAdvert: 0x8A, // when companion is set to manually add contacts
         TelemetryResponse: 0x8B,
+        BinaryResponse: 0x8C,
     }
 
     static ErrorCodes = {
@@ -110,6 +113,13 @@ class Constants {
         Plain: 0,
         CliData: 1,
         SignedPlain: 2,
+    }
+
+    static BinaryRequestTypes = {
+        GetTelemetryData: 0x03, // #define REQ_TYPE_GET_TELEMETRY_DATA 0x03
+        GetAvgMinMax: 0x04, // #define REQ_TYPE_GET_AVG_MIN_MAX 0x04
+        GetAccessList: 0x05, // #define REQ_TYPE_GET_ACCESS_LIST 0x05
+        GetNeighbours: 0x06, // #define REQ_TYPE_GET_NEIGHBOURS 0x06
     }
 
 }

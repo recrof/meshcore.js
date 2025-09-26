@@ -1637,6 +1637,7 @@ class Connection extends EventEmitter {
         });
     }
 
+    // @deprecated migrate to using tracePath instead. pingRepeaterZeroHop will be removed in a future update
     pingRepeaterZeroHop(contactPublicKey, timeoutMillis) {
         return new Promise(async (resolve, reject) => {
             try {

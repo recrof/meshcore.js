@@ -276,6 +276,25 @@ class Connection extends EventEmitter {
         await this.sendToRadioFrame(data.toBytes());
     }
 
+    async sendCommandSignStart() {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SignStart);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
+    async sendCommandSignData(dataToSign) {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SignData);
+        data.writeBytes(dataToSign);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
+    async sendCommandSignFinish() {
+        const data = new BufferWriter();
+        data.writeByte(Constants.CommandCodes.SignFinish);
+        await this.sendToRadioFrame(data.toBytes());
+    }
+
     async sendCommandSendTracePath(tag, auth, path) {
         const data = new BufferWriter();
         data.writeByte(Constants.CommandCodes.SendTracePath);
@@ -335,6 +354,10 @@ class Connection extends EventEmitter {
             this.onDisabledResponse(bufferReader);
         } else if(responseCode === Constants.ResponseCodes.ChannelInfo){
             this.onChannelInfoResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.SignStart){
+            this.onSignStartResponse(bufferReader);
+        } else if(responseCode === Constants.ResponseCodes.Signature){
+            this.onSignatureResponse(bufferReader);
         } else if(responseCode === Constants.PushCodes.Advert){
             this.onAdvertPush(bufferReader);
         } else if(responseCode === Constants.PushCodes.PathUpdated){
@@ -565,6 +588,19 @@ class Connection extends EventEmitter {
             console.log(`ChannelInfo has unexpected key length: ${remainingBytesLength}`);
         }
 
+    }
+
+    onSignStartResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.SignStart, {
+            reserved: bufferReader.readByte(),
+            maxSignDataLen: bufferReader.readUInt32LE(),
+        });
+    }
+
+    onSignatureResponse(bufferReader) {
+        this.emit(Constants.ResponseCodes.Signature, {
+            signature: bufferReader.readBytes(64),
+        });
     }
 
     onSelfInfoResponse(bufferReader) {
@@ -1920,6 +1956,95 @@ class Connection extends EventEmitter {
             return BufferUtils.areBuffersEqual(secret, channel.secret);
         });
 
+    }
+
+    async sign(data) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                const chunkSize = 128;
+                const bufferReader = new BufferReader(data);
+
+                const sendNextChunk = async () =>  {
+
+                    // get next chunk
+                    var chunk;
+                    if(bufferReader.getRemainingBytesCount() >= chunkSize){
+                        chunk = bufferReader.readBytes(chunkSize);
+                    } else {
+                        chunk = bufferReader.readRemainingBytes();
+                    }
+
+                    // send chunk
+                    await this.sendCommandSignData(chunk);
+
+                }
+
+                // listen for ok to send next chunk
+                const onOk = async (response) => {
+
+                    // check if more chunks to send
+                    if(bufferReader.getRemainingBytesCount() > 0){
+                        await sendNextChunk();
+                        return;
+                    }
+
+                    // no more chunks to send, tell device we are done
+                    await this.sendCommandSignFinish();
+
+                }
+
+                // listen for sign start
+                const onSignStart = async (response) => {
+
+                    this.off(Constants.ResponseCodes.SignStart, onSignStart);
+
+                    // check if data to sign is too long
+                    if(bufferReader.getRemainingBytesCount() > response.maxSignDataLen){
+                        this.off(Constants.ResponseCodes.ok, onOk);
+                        this.off(Constants.ResponseCodes.err, onErr);
+                        this.off(Constants.ResponseCodes.SignStart, onSignStart);
+                        this.off(Constants.ResponseCodes.Signature, onSignature);
+                        reject("data_too_long");
+                        return;
+                    }
+
+                    // start first chunk of data
+                    await sendNextChunk();
+
+                }
+
+                // resolve when we receive signature
+                const onSignature = (response) => {
+                    this.off(Constants.ResponseCodes.ok, onOk);
+                    this.off(Constants.ResponseCodes.err, onErr);
+                    this.off(Constants.ResponseCodes.SignStart, onSignStart);
+                    this.off(Constants.ResponseCodes.Signature, onSignature);
+                    resolve(response.signature);
+                }
+
+                // reject promise when we receive err
+                const onErr = (response) => {
+                    this.off(Constants.ResponseCodes.ok, onOk);
+                    this.off(Constants.ResponseCodes.err, onErr);
+                    this.off(Constants.ResponseCodes.SignStart, onSignStart);
+                    this.off(Constants.ResponseCodes.Signature, onSignature);
+                    reject(response);
+                }
+
+                // listen for events
+                this.on(Constants.ResponseCodes.Ok, onOk);
+                this.on(Constants.ResponseCodes.SignStart, onSignStart);
+                this.on(Constants.ResponseCodes.Signature, onSignature);
+                this.once(Constants.ResponseCodes.Err, onErr);
+
+                // request device to start signing data
+                await this.sendCommandSignStart();
+
+            } catch(e) {
+                reject(e);
+            }
+        });
     }
 
     tracePath(path, extraTimeoutMillis = 0) {

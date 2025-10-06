@@ -43,7 +43,9 @@ class Constants {
         SendStatusReq: 27, // todo
         GetChannel: 31,
         SetChannel: 32,
-        // todo sign commands
+        SignStart: 33,
+        SignData: 34,
+        SignFinish: 35,
         SendTracePath: 36,
         // todo set device pin command
         SetOtherParams: 38,
@@ -70,6 +72,8 @@ class Constants {
         PrivateKey: 14,
         Disabled: 15,
         ChannelInfo: 18,
+        SignStart: 19,
+        Signature: 20,
     }
 
     static PushCodes = {

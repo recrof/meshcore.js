@@ -54,7 +54,7 @@ class Advert {
 
     async isVerified() {
 
-        const ed25519 = await import("@noble/curves/ed25519");
+        const { ed25519 } = await import("@noble/curves/ed25519");
 
         // build signed data
         const bufferWriter = new BufferWriter();

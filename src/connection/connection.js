@@ -498,8 +498,9 @@ class Connection extends EventEmitter {
     }
 
     onErrResponse(bufferReader) {
+        const errCode = bufferReader.getRemainingBytesCount() > 0 ? bufferReader.readByte() : null;
         this.emit(Constants.ResponseCodes.Err, {
-
+            errCode: errCode,
         });
     }
 
